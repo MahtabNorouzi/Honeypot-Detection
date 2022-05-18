@@ -28,8 +28,10 @@ log = logging.getLogger(__name__)
 UNSIGNED_BOUND_NUMBER = 2**256 - 1
 CONSTANT_ONES_159 = BitVecVal((1 << 160) - 1, 256)
 
+
 def enum(**named_values):
     return type('Enum', (), named_values)
+
 
 HeuristicTypes = enum(
     MONEY_FLOW="Money flow",
@@ -44,6 +46,7 @@ HeuristicTypes = enum(
     MAP_KEY_ENCODING_TRICK="Map key encoding",
     MY_TESST="My_tesst"
 )
+
 
 class Parameter:
     def __init__(self, **kwargs):
@@ -72,6 +75,7 @@ class Parameter:
     def copy(self):
         _kwargs = custom_deepcopy(self.__dict__)
         return Parameter(**_kwargs)
+
 
 def initGlobalVars():
     global solver
@@ -149,10 +153,6 @@ def initGlobalVars():
     global heuristics
     heuristics = []
 
-
-
-
-
     # capturing the last statement of each basic block
     global end_ins_dict
     end_ins_dict = {}
@@ -196,6 +196,7 @@ def initGlobalVars():
     global log_file
     log_file = open(c_name + '.log', "w")
 
+
 def change_format():
     with open(c_name) as disasm_file:
         file_contents = disasm_file.readlines()
@@ -208,13 +209,13 @@ def change_format():
             line = line.replace('Missing opcode', 'INVALID')
             line = line.replace(':', '')
             lineParts = line.split(' ')
-            try: # removing initial zeroes
+            try:  # removing initial zeroes
                 lineParts[0] = str(int(lineParts[0]))
 
             except:
                 lineParts[0] = lineParts[0]
             lineParts[-1] = lineParts[-1].strip('\n')
-            try: # adding arrow if last is a number
+            try:  # adding arrow if last is a number
                 lastInt = lineParts[-1]
                 if(int(lastInt, 16) or int(lastInt, 16) == 0) and len(lineParts) > 2:
                     lineParts[-1] = "=>"
@@ -228,6 +229,7 @@ def change_format():
 
     with open(c_name, 'w') as disasm_file:
         disasm_file.write("\n".join(file_contents))
+
 
 def build_cfg_and_analyze():
     global source_map
@@ -243,22 +245,26 @@ def build_cfg_and_analyze():
         if global_params.CFG:
             print_cfg()
 
+
 def print_cfg():
     f = open(c_name.replace('.disasm', '').replace(':', '-')+'.dot', 'w')
     f.write('digraph honeybadger_cfg {\n')
     f.write('rankdir = TB;\n')
     f.write('size = "240"\n')
-    f.write('graph[fontname = Courier, fontsize = 14.0, labeljust = l, nojustify = true];node[shape = record];\n')
+    f.write(
+        'graph[fontname = Courier, fontsize = 14.0, labeljust = l, nojustify = true];node[shape = record];\n')
     address_width = 10
     if len(hex(instructions.keys()[-1])) > address_width:
         address_width = len(hex(instructions.keys()[-1]))
     for block in vertices.values():
-        #block.display()
+        # block.display()
         address = block.get_start_address()
         label = '"'+hex(block.get_start_address())+'"[label="'
         for instruction in block.get_instructions():
-            label += "{0:#0{1}x}".format(address, address_width)+" "+instruction+"\l"
-            address += 1 + (len(instruction.split(' ')[1].replace("0x", "")) / 2)
+            label += "{0:#0{1}x}".format(address,
+                                         address_width)+" "+instruction+"\l"
+            address += 1 + (len(instruction.split(' ')
+                            [1].replace("0x", "")) / 2)
         if block.get_start_address() in infeasible_blocks:
             f.write(label+'",style=filled,color=gray];\n')
         else:
@@ -268,23 +274,30 @@ def print_cfg():
                 true_branch = block.get_branch_expression()
                 if is_expr(true_branch):
                     true_branch = simplify(true_branch)
-                f.write('"'+hex(block.get_start_address())+'" -> "'+hex(edges[block.get_start_address()][1])+'" [color="green" label=" '+str(true_branch)+'"];\n')
+                f.write('"'+hex(block.get_start_address())+'" -> "'+hex(
+                    edges[block.get_start_address()][1])+'" [color="green" label=" '+str(true_branch)+'"];\n')
                 false_branch = Not(block.get_branch_expression())
                 if is_expr(false_branch):
                     false_branch = simplify(false_branch)
-                f.write('"'+hex(block.get_start_address())+'" -> "'+hex(edges[block.get_start_address()][0])+'" [color="red" label=" '+str(false_branch)+'"];\n')
+                f.write('"'+hex(block.get_start_address())+'" -> "'+hex(
+                    edges[block.get_start_address()][0])+'" [color="red" label=" '+str(false_branch)+'"];\n')
             else:
-                f.write('"'+hex(block.get_start_address())+'" -> "UNKNOWN_TARGET" [color="black" label=" UNKNOWN_BRANCH_EXPR"];\n')
-                f.write('"'+hex(block.get_start_address())+'" -> "'+hex(edges[block.get_start_address()][0])+'" [color="black"];\n')
+                f.write('"'+hex(block.get_start_address()) +
+                        '" -> "UNKNOWN_TARGET" [color="black" label=" UNKNOWN_BRANCH_EXPR"];\n')
+                f.write('"'+hex(block.get_start_address())+'" -> "' +
+                        hex(edges[block.get_start_address()][0])+'" [color="black"];\n')
         elif block.get_block_type() == "unconditional" or block.get_block_type() == "falls_to":
             if len(edges[block.get_start_address()]) > 0:
                 for i in range(len(edges[block.get_start_address()])):
-                    f.write('"'+hex(block.get_start_address())+'" -> "'+hex(edges[block.get_start_address()][i])+'" [color="black"];\n')
+                    f.write('"'+hex(block.get_start_address())+'" -> "' +
+                            hex(edges[block.get_start_address()][i])+'" [color="black"];\n')
             else:
-                f.write('"'+hex(block.get_start_address())+'" -> "UNKNOWN_TARGET" [color="black"];\n')
+                f.write('"'+hex(block.get_start_address()) +
+                        '" -> "UNKNOWN_TARGET" [color="black"];\n')
     f.write('}\n')
     f.close()
     log.debug(str(edges))
+
 
 def mapping_push_instruction(current_line_content, current_ins_address, idx, positions, length):
     global source_map
@@ -303,16 +316,17 @@ def mapping_push_instruction(current_line_content, current_ins_address, idx, pos
                     if int(value, 16) == int(instr_value, 16):
                         source_map.instr_positions[current_ins_address] = source_map.positions[idx]
                         idx += 1
-                        break;
+                        break
                     else:
                         raise Exception("Source map error")
                 else:
                     source_map.instr_positions[current_ins_address] = source_map.positions[idx]
                     idx += 1
-                    break;
+                    break
             else:
                 raise Exception("Source map error")
     return idx
+
 
 def mapping_non_push_instruction(current_line_content, current_ins_address, idx, positions, length):
     global source_map
@@ -328,7 +342,7 @@ def mapping_non_push_instruction(current_line_content, current_ins_address, idx,
             if name == instr_name or name == "INVALID" and instr_name == "ASSERTFAIL" or name == "KECCAK256" and instr_name == "SHA3" or name == "SELFDESTRUCT" and instr_name == "SUICIDE":
                 source_map.instr_positions[current_ins_address] = source_map.positions[idx]
                 idx += 1
-                break;
+                break
             else:
                 raise Exception("Source map error")
     return idx
@@ -336,6 +350,8 @@ def mapping_non_push_instruction(current_line_content, current_ins_address, idx,
 # 1. Parse the disassembled file
 # 2. Then identify each basic block (i.e. one-in, one-out)
 # 3. Store them in vertices
+
+
 def collect_vertices(tokens):
     global source_map
     if source_map:
@@ -362,7 +378,8 @@ def collect_vertices(tokens):
                     is_new_line = True
                     current_line_content += push_val + ' '
                     instructions[current_ins_address] = current_line_content
-                    idx = mapping_push_instruction(current_line_content, current_ins_address, idx, positions, length) if source_map else None
+                    idx = mapping_push_instruction(
+                        current_line_content, current_ins_address, idx, positions, length) if source_map else None
                     log.debug(current_line_content)
                     current_line_content = ""
                     wait_for_push = False
@@ -389,7 +406,8 @@ def collect_vertices(tokens):
             is_new_line = True
             log.debug(current_line_content)
             instructions[current_ins_address] = current_line_content
-            idx = mapping_non_push_instruction(current_line_content, current_ins_address, idx, positions, length) if source_map else None
+            idx = mapping_non_push_instruction(
+                current_line_content, current_ins_address, idx, positions, length) if source_map else None
             current_line_content = ""
             continue
         elif tok_type == NAME:
@@ -451,6 +469,7 @@ def construct_bb():
 def construct_static_edges():
     add_falls_to()  # these edges are static
 
+
 def add_falls_to():
     global vertices
     global edges
@@ -462,10 +481,19 @@ def add_falls_to():
             edges[key].append(target)
             vertices[key].set_falls_to(target)
 
+
+def get_name_for(var_name):
+    global is_constructor
+    if is_constructor:
+        return "constructor_" + var_name
+    else:
+        return var_name
+
+
 def get_init_global_state(path_conditions_and_vars):
     global message_value
 
-    global_state = {"balance" : {}, "pc": 0}
+    global_state = {"balance": {}, "pc": 0}
     init_is = init_ia = deposited_value = sender_address = receiver_address = gas_price = origin = currentCoinbase = currentNumber = currentDifficulty = currentGasLimit = callData = None
 
     if global_params.INPUT_STATE:
@@ -496,11 +524,11 @@ def get_init_global_state(path_conditions_and_vars):
 
     # for some weird reason these 3 vars are stored in path_conditions instead of global_state
     else:
-        sender_address = BitVec("Is", 256)
-        receiver_address = BitVec("Ia", 256)
-        deposited_value = BitVec("Iv", 256)
-        init_is = BitVec("init_Is", 256)
-        init_ia = BitVec("init_Ia", 256)
+        sender_address = BitVec(get_name_for("Is"), 256)
+        receiver_address = BitVec(get_name_for("Ia"), 256)
+        deposited_value = BitVec(get_name_for("Iv"), 256)
+        init_is = BitVec(get_name_for("init_Is"), 256)
+        init_ia = BitVec(get_name_for("init_Ia"), 256)
 
     path_conditions_and_vars["Is"] = sender_address
     path_conditions_and_vars["Ia"] = receiver_address
@@ -531,26 +559,26 @@ def get_init_global_state(path_conditions_and_vars):
         path_conditions_and_vars[new_var_name] = origin
 
     if not currentCoinbase:
-        new_var_name = "IH_c"
+        new_var_name = get_name_for("IH_c")
         currentCoinbase = BitVec(new_var_name, 256)
         path_conditions_and_vars[new_var_name] = currentCoinbase
 
     if not currentNumber:
-        new_var_name = "IH_i"
+        new_var_name = get_name_for("IH_i")
         currentNumber = BitVec(new_var_name, 256)
         path_conditions_and_vars[new_var_name] = currentNumber
 
     if not currentDifficulty:
-        new_var_name = "IH_d"
+        new_var_name = get_name_for("IH_d")
         currentDifficulty = BitVec(new_var_name, 256)
         path_conditions_and_vars[new_var_name] = currentDifficulty
 
     if not currentGasLimit:
-        new_var_name = "IH_l"
+        new_var_name = get_name_for("IH_l")
         currentGasLimit = BitVec(new_var_name, 256)
         path_conditions_and_vars[new_var_name] = currentGasLimit
 
-    new_var_name = "IH_s"
+    new_var_name = get_name_for("IH_s")
     currentTimestamp = BitVec(new_var_name, 256)
     path_conditions_and_vars[new_var_name] = currentTimestamp
 
@@ -574,10 +602,11 @@ def get_init_global_state(path_conditions_and_vars):
 
 def full_sym_exec():
     # executing, starting from beginning
-    path_conditions_and_vars = {"path_condition" : []}
+    path_conditions_and_vars = {"path_condition": []}
     global_state = get_init_global_state(path_conditions_and_vars)
     analysis = init_analysis()
-    params = Parameter(path_conditions_and_vars=path_conditions_and_vars, global_state=global_state, analysis=analysis)
+    params = Parameter(path_conditions_and_vars=path_conditions_and_vars,
+                       global_state=global_state, analysis=analysis)
     execution_paths[total_no_of_paths] = []
     return sym_exec_block(params)
 
@@ -609,7 +638,8 @@ def sym_exec_block(params):
     calls = params.calls
     func_call = params.func_call
 
-    Edge = namedtuple("Edge", ["v1", "v2"]) # Factory Function for tuples is used as dictionary key
+    # Factory Function for tuples is used as dictionary key
+    Edge = namedtuple("Edge", ["v1", "v2"])
     if block < 0:
         log.debug("UNKNOWN JUMP ADDRESS. TERMINATING THIS PATH")
         return ["ERROR"]
@@ -628,7 +658,8 @@ def sym_exec_block(params):
     if visited_edges[current_edge] > global_params.LOOP_LIMIT:
         if jump_type[pre_block] == "conditional" and vertices[pre_block].get_falls_to() == block:
             if global_params.DEBUG_MODE:
-                print("!!! Overcome a number of loop limit. Terminating this path ... !!!")
+                print(
+                    "!!! Overcome a number of loop limit. Terminating this path ... !!!")
             return stack
 
     current_gas_used = analysis["gas"]
@@ -659,30 +690,33 @@ def sym_exec_block(params):
         for index in instructions:
             if index >= vertices[block].get_start_address() and index <= vertices[block].get_end_address():
                 sequence_of_instructions += str(index)+" "+instructions[index]
-        matches = re.compile("[0-9]+ DUP2 [0-9]+ PUSH1 0x([0-9]+) [0-9]+ ADD .+? [0-9]+ 1 ([0-9]+) SSTORE").findall(sequence_of_instructions)
+        matches = re.compile(
+            "[0-9]+ DUP2 [0-9]+ PUSH1 0x([0-9]+) [0-9]+ ADD .+? [0-9]+ 1 ([0-9]+) SSTORE").findall(sequence_of_instructions)
         if matches:
             # Check that that struct has more than one element and that the first element is stored to address 0
             if len(matches) > 1 and int(matches[0][0]) == 0:
                 for match in matches:
                     struct = {}
-                    struct["path_condition"]     = path_conditions_and_vars["path_condition"]
-                    struct["function_signature"] = get_function_signature_from_path_condition(struct["path_condition"])
-                    struct["address"]            = int(match[0])
-                    struct["block"]              = params.block
-                    struct["pc"]                 = int(match[1])
+                    struct["path_condition"] = path_conditions_and_vars["path_condition"]
+                    struct["function_signature"] = get_function_signature_from_path_condition(
+                        struct["path_condition"])
+                    struct["address"] = int(match[0])
+                    struct["block"] = params.block
+                    struct["pc"] = int(match[1])
                     if not struct in list_of_structs:
                         list_of_structs.append(struct)
         else:
-            matches = re.compile("[0-9]+ DUP2 ([0-9]+) SSTORE .+? [0-9]+ PUSH1 0x[0-9]+ [0-9]+ DUP[0-9] [0-9]+ ADD [0-9]+ SSTORE").findall(sequence_of_instructions)
+            matches = re.compile(
+                "[0-9]+ DUP2 ([0-9]+) SSTORE .+? [0-9]+ PUSH1 0x[0-9]+ [0-9]+ DUP[0-9] [0-9]+ ADD [0-9]+ SSTORE").findall(sequence_of_instructions)
             if matches:
                 for sstore in list_of_sstores:
                     if sstore["pc"] == int(matches[0]) and sstore["address"] == 0:
                         struct = {}
-                        struct["path_condition"]     = path_conditions_and_vars["path_condition"]
+                        struct["path_condition"] = path_conditions_and_vars["path_condition"]
                         struct["function_signature"] = sstore["function_signature"]
-                        struct["address"]            = sstore["address"]
-                        struct["block"]              = params.block
-                        struct["pc"]                 = sstore["pc"]
+                        struct["address"] = sstore["address"]
+                        struct["block"] = params.block
+                        struct["pc"] = sstore["pc"]
                         if not struct in list_of_structs:
                             list_of_structs.append(struct)
     except:
@@ -699,7 +733,8 @@ def sym_exec_block(params):
         total_no_of_paths += 1
 
         terminal = {}
-        terminal["opcode"] = block_ins = vertices[block].get_instructions()[-1].replace(" ", "")
+        terminal["opcode"] = block_ins = vertices[block].get_instructions(
+        )[-1].replace(" ", "")
         terminal["path_condition"] = path_conditions_and_vars["path_condition"]
         terminals.append(terminal)
 
@@ -742,7 +777,8 @@ def sym_exec_block(params):
         updated_count_number = visited_edges[current_edge] - 1
         visited_edges.update({current_edge: updated_count_number})
 
-        current_execution_path = copy.deepcopy(execution_paths[total_no_of_paths])
+        current_execution_path = copy.deepcopy(
+            execution_paths[total_no_of_paths])
 
         branch_expression = vertices[block].get_branch_expression()
         negated_branch_expression = Not(branch_expression)
@@ -751,10 +787,12 @@ def sym_exec_block(params):
         solver.add(path_conditions_and_vars["path_condition"])
 
         if global_params.DEBUG_MODE:
-            print("Negated branch expression: " + remove_line_break_space(negated_branch_expression))
+            print("Negated branch expression: " +
+                  remove_line_break_space(negated_branch_expression))
 
         if not negated_branch_expression in list_of_comparisons:
-            list_of_comparisons[negated_branch_expression] = get_function_signature_from_path_condition(path_conditions_and_vars["path_condition"])
+            list_of_comparisons[negated_branch_expression] = get_function_signature_from_path_condition(
+                path_conditions_and_vars["path_condition"])
 
         solver.add(negated_branch_expression)
 
@@ -786,7 +824,8 @@ def sym_exec_block(params):
             new_params.visited_edges = visited_edges
             new_params.global_state["pc"] = right_branch
             new_params.is_feasible = isRightBranchFeasible
-            new_params.path_conditions_and_vars["path_condition"].append(negated_branch_expression)
+            new_params.path_conditions_and_vars["path_condition"].append(
+                negated_branch_expression)
             sym_exec_block(new_params)
         except Exception as e:
             log_file.write(str(e))
@@ -801,10 +840,12 @@ def sym_exec_block(params):
         solver.add(path_conditions_and_vars["path_condition"])
 
         if global_params.DEBUG_MODE:
-            print("Branch expression: " + remove_line_break_space(branch_expression))
+            print("Branch expression: " +
+                  remove_line_break_space(branch_expression))
 
         if not branch_expression in list_of_comparisons:
-            list_of_comparisons[branch_expression] = get_function_signature_from_path_condition(path_conditions_and_vars["path_condition"])
+            list_of_comparisons[branch_expression] = get_function_signature_from_path_condition(
+                path_conditions_and_vars["path_condition"])
 
         solver.add(branch_expression)
 
@@ -836,7 +877,8 @@ def sym_exec_block(params):
             new_params.visited_edges = visited_edges
             new_params.global_state["pc"] = left_branch
             new_params.is_feasible = isLeftBranchFeasible
-            new_params.path_conditions_and_vars["path_condition"].append(branch_expression)
+            new_params.path_conditions_and_vars["path_condition"].append(
+                branch_expression)
             sym_exec_block(new_params)
         except Exception as e:
             log_file.write(str(e))
@@ -850,6 +892,8 @@ def sym_exec_block(params):
         raise Exception('Unknown Jump-Type')
 
 # Symbolically executing an instruction
+
+
 def sym_exec_ins(params):
     global visited_pcs
     global solver
@@ -885,7 +929,8 @@ def sym_exec_ins(params):
     # collecting the analysis result by calling this skeletal function
     # this should be done before symbolically executing the instruction,
     # since SE will modify the stack and mem
-    update_analysis(analysis, instr_parts[0], stack, mem, global_state, path_conditions_and_vars, solver)
+    update_analysis(analysis, instr_parts[0], stack, mem,
+                    global_state, path_conditions_and_vars, solver)
 
     log.debug("==============================")
     log.debug("EXECUTING: " + instr)
@@ -895,7 +940,7 @@ def sym_exec_ins(params):
     #
     if instr_parts[0] == "STOP":
         global_state["pc"] = global_state["pc"] + 1
-        #return
+        # return
     elif instr_parts[0] == "ADD":
         if len(stack) > 1:
             first = stack.pop(0)
@@ -935,7 +980,8 @@ def sym_exec_ins(params):
                 if not global_state["pc"] in list_of_multiplications:
                     list_of_multiplications[global_state["pc"]] = []
                 if not computed in list_of_multiplications[global_state["pc"]]:
-                    list_of_multiplications[global_state["pc"]].append(computed)
+                    list_of_multiplications[global_state["pc"]].append(
+                        computed)
             stack.insert(0, computed)
             global_state["pc"] = global_state["pc"] + 1
         else:
@@ -997,7 +1043,7 @@ def sym_exec_ins(params):
                     computed = -2**255
                 else:
                     sign = -1 if (first / second) < 0 else 1
-                    computed = sign * ( abs(first) / abs(second) )
+                    computed = sign * (abs(first) / abs(second))
             else:
                 first = to_symbolic(first)
                 second = to_symbolic(second)
@@ -1007,7 +1053,7 @@ def sym_exec_ins(params):
                     computed = 0
                 else:
                     solver.push()
-                    solver.add( Not( And(first == -2**255, second == -1 ) ))
+                    solver.add(Not(And(first == -2**255, second == -1)))
                     if check_solver(solver) == unsat:
                         computed = -2**255
                     else:
@@ -1015,7 +1061,7 @@ def sym_exec_ins(params):
                         s.set("timeout", global_params.TIMEOUT)
                         s.add(first / second < 0)
                         sign = -1 if check_solver(s) == sat else 1
-                        z3_abs = lambda x: If(x >= 0, x, -x)
+                        def z3_abs(x): return If(x >= 0, x, -x)
                         first = z3_abs(first)
                         second = z3_abs(second)
                         computed = sign * (first / second)
@@ -1075,11 +1121,11 @@ def sym_exec_ins(params):
                     computed = 0
                 else:
                     solver.push()
-                    solver.add(first < 0) # check sign of first element
+                    solver.add(first < 0)  # check sign of first element
                     sign = BitVecVal(-1, 256) if check_solver(solver) == sat \
                         else BitVecVal(1, 256)
                     solver.pop()
-                    z3_abs = lambda x: If(x >= 0, x, -x)
+                    def z3_abs(x): return If(x >= 0, x, -x)
                     first = z3_abs(first)
                     second = z3_abs(second)
                     computed = sign * (first % second)
@@ -1177,9 +1223,11 @@ def sym_exec_ins(params):
                 else:
                     signbit_index_from_right = 8 * first + 7
                     if second & (1 << signbit_index_from_right):
-                        computed = second | (2 ** 256 - (1 << signbit_index_from_right))
+                        computed = second | (
+                            2 ** 256 - (1 << signbit_index_from_right))
                     else:
-                        computed = second & ((1 << signbit_index_from_right) - 1 )
+                        computed = second & (
+                            (1 << signbit_index_from_right) - 1)
             else:
                 first = to_symbolic(first)
                 second = to_symbolic(second)
@@ -1192,9 +1240,11 @@ def sym_exec_ins(params):
                     solver.push()
                     solver.add(second & (1 << signbit_index_from_right) == 0)
                     if check_solver(solver) == unsat:
-                        computed = second | (2 ** 256 - (1 << signbit_index_from_right))
+                        computed = second | (
+                            2 ** 256 - (1 << signbit_index_from_right))
                     else:
-                        computed = second & ((1 << signbit_index_from_right) - 1)
+                        computed = second & (
+                            (1 << signbit_index_from_right) - 1)
                     solver.pop()
                 solver.pop()
             computed = simplify(computed) if is_expr(computed) else computed
@@ -1218,7 +1268,8 @@ def sym_exec_ins(params):
                 else:
                     computed = 0
             else:
-                computed = If(ULT(first, second), BitVecVal(1, 256), BitVecVal(0, 256))
+                computed = If(ULT(first, second), BitVecVal(
+                    1, 256), BitVecVal(0, 256))
             computed = simplify(computed) if is_expr(computed) else computed
             stack.insert(0, computed)
         else:
@@ -1236,7 +1287,8 @@ def sym_exec_ins(params):
                 else:
                     computed = 0
             else:
-                computed = If(UGT(first, second), BitVecVal(1, 256), BitVecVal(0, 256))
+                computed = If(UGT(first, second), BitVecVal(
+                    1, 256), BitVecVal(0, 256))
             computed = simplify(computed) if is_expr(computed) else computed
             stack.insert(0, computed)
         else:
@@ -1254,7 +1306,8 @@ def sym_exec_ins(params):
                 else:
                     computed = 0
             else:
-                computed = If(first < second, BitVecVal(1, 256), BitVecVal(0, 256))
+                computed = If(first < second, BitVecVal(
+                    1, 256), BitVecVal(0, 256))
             computed = simplify(computed) if is_expr(computed) else computed
             stack.insert(0, computed)
         else:
@@ -1272,7 +1325,8 @@ def sym_exec_ins(params):
                 else:
                     computed = 0
             else:
-                computed = If(first > second, BitVecVal(1, 256), BitVecVal(0, 256))
+                computed = If(first > second, BitVecVal(
+                    1, 256), BitVecVal(0, 256))
             computed = simplify(computed) if is_expr(computed) else computed
             stack.insert(0, computed)
         else:
@@ -1288,7 +1342,8 @@ def sym_exec_ins(params):
                 else:
                     computed = 0
             else:
-                computed = If(first == second, BitVecVal(1, 256), BitVecVal(0, 256))
+                computed = If(first == second, BitVecVal(
+                    1, 256), BitVecVal(0, 256))
             computed = simplify(computed) if is_expr(computed) else computed
             stack.insert(0, computed)
         else:
@@ -1319,7 +1374,7 @@ def sym_exec_ins(params):
             computed = simplify(computed) if is_expr(computed) else computed
             if (isReal(first) and hex(first) == "0xff") or (isReal(second) and hex(second) == "0xff"):
                 if not global_state["pc"] in list_of_vars:
-                     list_of_vars[global_state["pc"]] = []
+                    list_of_vars[global_state["pc"]] = []
                 if isReal(first) and hex(first) == "0xff":
                     list_of_vars[global_state["pc"]].append(second)
                 if isReal(second) and hex(second) == "0xff":
@@ -1374,7 +1429,7 @@ def sym_exec_ins(params):
                 first = to_symbolic(first)
                 second = to_symbolic(second)
                 solver.push()
-                solver.add( Not (Or( first >= 32, first < 0 ) ) )
+                solver.add(Not(Or(first >= 32, first < 0)))
                 if check_solver(solver) == unsat:
                     computed = 0
                 else:
@@ -1446,7 +1501,8 @@ def sym_exec_ins(params):
             else:
                 new_var_name = gen.gen_balance_var(address)
                 if path_conditions_and_vars["Ia"] in get_vars(address):
-                    new_var_name = gen.gen_balance_var(path_conditions_and_vars["Ia"])
+                    new_var_name = gen.gen_balance_var(
+                        path_conditions_and_vars["Ia"])
                     account_balance = new_var_name
                 if new_var_name in path_conditions_and_vars:
                     balance = path_conditions_and_vars[new_var_name]
@@ -1454,8 +1510,10 @@ def sym_exec_ins(params):
                     balance = BitVec(new_var_name, 256)
                     path_conditions_and_vars[new_var_name] = balance
                     if path_conditions_and_vars["Ia"] in get_vars(address):
-                        path_conditions_and_vars["path_condition"].append(balance > 0)
-                        path_conditions_and_vars["path_condition"].append(balance == balance + path_conditions_and_vars["Iv"])
+                        path_conditions_and_vars["path_condition"].append(
+                            balance > 0)
+                        path_conditions_and_vars["path_condition"].append(
+                            balance == balance + path_conditions_and_vars["Iv"])
             if isReal(address):
                 hashed_address = "concrete_address_" + str(address)
             else:
@@ -1481,7 +1539,8 @@ def sym_exec_ins(params):
                 function_signature = None
                 for condition in path_conditions_and_vars["path_condition"]:
                     if is_expr(condition) and str(condition).startswith("If(Extract(255, 224, Id_1) == "):
-                        match = re.compile("Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(condition))
+                        match = re.compile(
+                            "Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(condition))
                         if match:
                             function_signature = int(match[0])
                 if not function_signature in list_of_functions:
@@ -1491,7 +1550,7 @@ def sym_exec_ins(params):
                 calldataload["pc"] = global_state["pc"]
                 calldataload["position"] = position
                 list_of_functions[function_signature].append(calldataload)
-            #if source_map:
+            # if source_map:
             #    source_code = source_map.find_source_code(global_state["pc"] - 1)
             #    if source_code.startswith("function") and isReal(position):
             #        idx1 = source_code.index("(") + 1
@@ -1504,7 +1563,7 @@ def sym_exec_ins(params):
             #        source_map.var_names.append(new_var_name)
             #    else:
             #    new_var_name = gen.gen_data_var(position)
-            #else:
+            # else:
             new_var_name = gen.gen_data_var(position)
             if new_var_name in path_conditions_and_vars:
                 new_var = path_conditions_and_vars[new_var_name]
@@ -1581,7 +1640,7 @@ def sym_exec_ins(params):
                 if check_solver(solver) != unsat:
                     current_miu_i = If(expression, temp, current_miu_i)
                 solver.pop()
-                mem.clear() # very conservative
+                mem.clear()  # very conservative
                 mem[str(mem_location)] = new_var
             global_state["miu_i"] = current_miu_i
         else:
@@ -1597,7 +1656,7 @@ def sym_exec_ins(params):
                 code = data_source.getCode(address)
                 stack.insert(0, len(code)/2)
             else:
-                #not handled yet
+                # not handled yet
                 new_var_name = gen.gen_code_size_var(address)
                 if new_var_name in path_conditions_and_vars:
                     new_var = path_conditions_and_vars[new_var_name]
@@ -1642,7 +1701,7 @@ def sym_exec_ins(params):
                 if check_solver(solver) != unsat:
                     current_miu_i = If(expression, temp, current_miu_i)
                 solver.pop()
-                mem.clear() # very conservative
+                mem.clear()  # very conservative
                 mem[str(mem_location)] = new_var
             global_state["miu_i"] = current_miu_i
         else:
@@ -1717,19 +1776,20 @@ def sym_exec_ins(params):
                 temp = ((address + 31) / 32) + 1
                 current_miu_i = to_symbolic(current_miu_i)
                 expression = current_miu_i < temp
-                #solver.push()
-                #solver.add(expression)
-                #if check_solver(solver) != unsat:
-                    # this means that it is possibly that current_miu_i < temp
+                # solver.push()
+                # solver.add(expression)
+                # if check_solver(solver) != unsat:
+                # this means that it is possibly that current_miu_i < temp
                 #    current_miu_i = If(expression,temp,current_miu_i)
-                #solver.pop()
+                # solver.pop()
                 if address in mem:
                     value = mem[address]
                     stack.insert(0, value)
                 else:
                     new_var_name = gen.gen_mem_var(address)
                     if not new_var_name in path_conditions_and_vars:
-                        path_conditions_and_vars[new_var_name] = BitVec(new_var_name, 256)
+                        path_conditions_and_vars[new_var_name] = BitVec(
+                            new_var_name, 256)
                     new_var = path_conditions_and_vars[new_var_name]
                     stack.insert(0, new_var)
                     mem[address] = new_var
@@ -1758,7 +1818,8 @@ def sym_exec_ins(params):
                 temp = long(math.ceil((stored_address + 32) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
-                mem[stored_address] = stored_value  # note that the stored_value could be symbolic
+                # note that the stored_value could be symbolic
+                mem[stored_address] = stored_value
                 log.debug("temp: " + str(temp))
                 log.debug("current_miu_i: " + str(current_miu_i))
             else:
@@ -1767,13 +1828,13 @@ def sym_exec_ins(params):
                 log.debug("current_miu_i: " + str(current_miu_i))
                 expression = current_miu_i < temp
                 log.debug("Expression: " + str(expression))
-                #solver.push()
-                #solver.add(expression)
-                #if check_solver(solver) != unsat:
-                    # this means that it is possibly that current_miu_i < temp
+                # solver.push()
+                # solver.add(expression)
+                # if check_solver(solver) != unsat:
+                # this means that it is possibly that current_miu_i < temp
                 #    current_miu_i = If(expression,temp,current_miu_i)
-                #solver.pop()
-                #mem.clear()  # very conservative
+                # solver.pop()
+                # mem.clear()  # very conservative
                 mem[stored_address] = stored_value
                 log.debug("temp: " + str(temp))
                 log.debug("current_miu_i: " + str(current_miu_i))
@@ -1791,7 +1852,8 @@ def sym_exec_ins(params):
                 temp = long(math.ceil((stored_address + 1) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
-                mem[stored_address] = stored_value  # note that the stored_value could be symbolic
+                # note that the stored_value could be symbolic
+                mem[stored_address] = stored_value
             else:
                 temp = (stored_address / 32) + 1
                 if isReal(current_miu_i):
@@ -1801,10 +1863,10 @@ def sym_exec_ins(params):
                 solver.add(expression)
                 if check_solver(solver) != unsat:
                     # this means that it is possibly that current_miu_i < temp
-                    current_miu_i = If(expression,temp,current_miu_i)
+                    current_miu_i = If(expression, temp, current_miu_i)
                 solver.pop()
                 mem[stored_address] = stored_value
-                #mem.clear()  # very conservative
+                # mem.clear()  # very conservative
             global_state["miu_i"] = current_miu_i
         else:
             raise ValueError('STACK underflow')
@@ -1822,7 +1884,8 @@ def sym_exec_ins(params):
                     if address.__class__.__name__ == "BitVecNumRef":
                         address = address.as_long()
                     else:
-                        path_conditions_and_vars[new_var_name] = BitVec(new_var_name, 256)
+                        path_conditions_and_vars[new_var_name] = BitVec(
+                            new_var_name, 256)
                 new_var = path_conditions_and_vars[new_var_name]
                 stack.insert(0, new_var)
                 global_state["Ia"][address] = new_var
@@ -1835,16 +1898,18 @@ def sym_exec_ins(params):
             stored_address = stack.pop(0)
             stored_value = stack.pop(0)
             sstore = {}
-            sstore["block"]              = params.block
-            sstore["pc"]                 = global_state["pc"]
-            sstore["address"]            = stored_address
-            sstore["value"]              = stored_value
+            sstore["block"] = params.block
+            sstore["pc"] = global_state["pc"]
+            sstore["address"] = stored_address
+            sstore["value"] = stored_value
             if stored_address in global_state["Ia"]:
-                sstore["variable"]       = global_state["Ia"][stored_address]
+                sstore["variable"] = global_state["Ia"][stored_address]
             else:
-                sstore["variable"]       = BitVec(gen.gen_owner_store_var(stored_address), 256)
-            sstore["path_condition"]     = path_conditions_and_vars["path_condition"]
-            sstore["function_signature"] = get_function_signature_from_path_condition(sstore["path_condition"])
+                sstore["variable"] = BitVec(
+                    gen.gen_owner_store_var(stored_address), 256)
+            sstore["path_condition"] = path_conditions_and_vars["path_condition"]
+            sstore["function_signature"] = get_function_signature_from_path_condition(
+                sstore["path_condition"])
             if not sstore in list_of_sstores:
                 list_of_sstores.append(sstore)
             global_state["pc"] = global_state["pc"] + 1
@@ -1858,7 +1923,8 @@ def sym_exec_ins(params):
                 try:
                     target_address = int(str(simplify(target_address)))
                 except:
-                    raise TypeError("Target address must be an integer: "+str(target_address))
+                    raise TypeError(
+                        "Target address must be an integer: "+str(target_address))
             vertices[start].set_jump_target(target_address)
             if target_address not in edges[start]:
                 edges[start].append(target_address)
@@ -1872,7 +1938,8 @@ def sym_exec_ins(params):
                 try:
                     target_address = int(str(simplify(target_address)))
                 except:
-                    raise TypeError("Target address must be an integer: "+str(target_address))
+                    raise TypeError(
+                        "Target address must be an integer: "+str(target_address))
             vertices[start].set_jump_target(target_address)
             flag = stack.pop(0)
 
@@ -1883,7 +1950,8 @@ def sym_exec_ins(params):
 
             function_signature = None
             if is_expr(branch_expression) and str(branch_expression).startswith("If(Extract(255, 224, Id_1) == "):
-                match = re.compile("Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(branch_expression))
+                match = re.compile(
+                    "Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(branch_expression))
                 if match:
                     function_signature = int(match[0])
             if function_signature and not function_signature in list_of_functions:
@@ -1983,18 +2051,20 @@ def sym_exec_ins(params):
             start_data_output = stack.pop(0)
             size_data_ouput = stack.pop(0)
             call = {}
-            call["path_condition"]     = copy.deepcopy(path_conditions_and_vars["path_condition"])
-            call["function_signature"] = get_function_signature_from_path_condition(call["path_condition"])
-            call["recipient"]          = recipient
-            call["value"]              = transfer_amount
-            call["input_offset"]       = start_data_input
-            call["input_size"]         = size_data_input
-            call["memory"]             = mem
-            call["block"]              = params.block
-            call["type"]               = "CALL"
-            call["gas"]                = outgas
-            call["pc"]                 = global_state["pc"]
-            call["id"]                 = len(list_of_calls)
+            call["path_condition"] = copy.deepcopy(
+                path_conditions_and_vars["path_condition"])
+            call["function_signature"] = get_function_signature_from_path_condition(
+                call["path_condition"])
+            call["recipient"] = recipient
+            call["value"] = transfer_amount
+            call["input_offset"] = start_data_input
+            call["input_size"] = size_data_input
+            call["memory"] = mem
+            call["block"] = params.block
+            call["type"] = "CALL"
+            call["gas"] = outgas
+            call["pc"] = global_state["pc"]
+            call["id"] = len(list_of_calls)
             if not total_no_of_paths in list_of_calls:
                 list_of_calls[total_no_of_paths] = []
             if call not in list_of_calls[total_no_of_paths]:
@@ -2020,8 +2090,10 @@ def sym_exec_ins(params):
                     stack.insert(0, 1)   # x = 1
                     solver.pop()
                     solver.add(is_enough_fund)
-                    path_conditions_and_vars["path_condition"].append(is_enough_fund)
-                    last_idx = len(path_conditions_and_vars["path_condition"]) - 1
+                    path_conditions_and_vars["path_condition"].append(
+                        is_enough_fund)
+                    last_idx = len(
+                        path_conditions_and_vars["path_condition"]) - 1
                     analysis["time_dependency_bug"][last_idx] = global_state["pc"] - 1
                     new_balance_ia = (balance_ia - transfer_amount)
                     global_state["balance"]["Ia"] = new_balance_ia
@@ -2032,12 +2104,14 @@ def sym_exec_ins(params):
                     solver.add(boolean_expression)
                     if check_solver(solver) == unsat:
                         solver.pop()
-                        new_balance_is = (global_state["balance"]["Is"] + transfer_amount)
+                        new_balance_is = (
+                            global_state["balance"]["Is"] + transfer_amount)
                         global_state["balance"]["Is"] = new_balance_is
                     else:
                         solver.pop()
                         if isReal(recipient):
-                            new_address_name = "concrete_address_" + str(recipient)
+                            new_address_name = "concrete_address_" + \
+                                str(recipient)
                         else:
                             new_address_name = gen.gen_arbitrary_address_var()
                         old_balance_name = gen.gen_arbitrary_var()
@@ -2045,7 +2119,8 @@ def sym_exec_ins(params):
                         path_conditions_and_vars[old_balance_name] = old_balance
                         constraint = (old_balance >= 0)
                         solver.add(constraint)
-                        path_conditions_and_vars["path_condition"].append(constraint)
+                        path_conditions_and_vars["path_condition"].append(
+                            constraint)
                         new_balance = (old_balance + transfer_amount)
                         global_state["balance"][new_address_name] = new_balance
             global_state["pc"] = global_state["pc"] + 1
@@ -2056,7 +2131,7 @@ def sym_exec_ins(params):
         if len(stack) > 6:
             global_state["pc"] = global_state["pc"] + 1
             outgas = stack.pop(0)
-            stack.pop(0) # this is not used as recipient
+            stack.pop(0)  # this is not used as recipient
             transfer_amount = stack.pop(0)
             start_data_input = stack.pop(0)
             size_data_input = stack.pop(0)
@@ -2084,7 +2159,8 @@ def sym_exec_ins(params):
                 stack.insert(0, 1)   # x = 1
                 solver.pop()
                 solver.add(is_enough_fund)
-                path_conditions_and_vars["path_condition"].append(is_enough_fund)
+                path_conditions_and_vars["path_condition"].append(
+                    is_enough_fund)
                 last_idx = len(path_conditions_and_vars["path_condition"]) - 1
                 analysis["time_dependency_bug"][last_idx]
         else:
@@ -2099,18 +2175,19 @@ def sym_exec_ins(params):
             start_data_output = stack.pop(0)
             size_data_ouput = stack.pop(0)
             call = {}
-            call["path_condition"]     = path_conditions_and_vars["path_condition"]
-            call["function_signature"] = get_function_signature_from_path_condition(call["path_condition"])
-            call["recipient"]          = recipient
-            call["value"]              = None
-            call["input_offset"]       = start_data_input
-            call["input_size"]         = size_data_input
-            call["memory"]             = mem
-            call["block"]              = params.block
-            call["type"]               = instr_parts[0]
-            call["gas"]                = outgas
-            call["pc"]                 = global_state["pc"]
-            call["id"]                 = len(list_of_calls)
+            call["path_condition"] = path_conditions_and_vars["path_condition"]
+            call["function_signature"] = get_function_signature_from_path_condition(
+                call["path_condition"])
+            call["recipient"] = recipient
+            call["value"] = None
+            call["input_offset"] = start_data_input
+            call["input_size"] = size_data_input
+            call["memory"] = mem
+            call["block"] = params.block
+            call["type"] = instr_parts[0]
+            call["gas"] = outgas
+            call["pc"] = global_state["pc"]
+            call["id"] = len(list_of_calls)
             if not total_no_of_paths in list_of_calls:
                 list_of_calls[total_no_of_paths] = []
             if not call in list_of_calls[total_no_of_paths]:
@@ -2135,12 +2212,13 @@ def sym_exec_ins(params):
         recipient = stack.pop(0)
         transfer_amount = global_state["balance"]["Ia"]
         suicide = {}
-        suicide["path_condition"]     = path_conditions_and_vars["path_condition"]
-        suicide["function_signature"] = get_function_signature_from_path_condition(suicide["path_condition"])
-        suicide["recipient"]          = recipient
-        suicide["value"]              = transfer_amount
-        suicide["block"]              = params.block
-        suicide["pc"]                 = global_state["pc"]
+        suicide["path_condition"] = path_conditions_and_vars["path_condition"]
+        suicide["function_signature"] = get_function_signature_from_path_condition(
+            suicide["path_condition"])
+        suicide["recipient"] = recipient
+        suicide["value"] = transfer_amount
+        suicide["block"] = params.block
+        suicide["pc"] = global_state["pc"]
         if suicide not in list_of_suicides:
             list_of_suicides.append(suicide)
         global_state["balance"]["Ia"] = 0
@@ -2177,6 +2255,8 @@ def sym_exec_ins(params):
 ########################################################
 #                    H0: Cash Flow                    #
 ########################################################
+
+
 def detect_cash_flow():
     # Check if money could potentially go in
     money_flow_in = False
@@ -2204,9 +2284,9 @@ def detect_cash_flow():
     if money_flow_in and money_flow_out:
         heuristic = {}
         heuristic["function_signature"] = None
-        heuristic["block"]              = None
-        heuristic["type"]               = HeuristicTypes.MONEY_FLOW
-        heuristic["pc"]                 = None
+        heuristic["block"] = None
+        heuristic["type"] = HeuristicTypes.MONEY_FLOW
+        heuristic["pc"] = None
         if not heuristic in heuristics:
             heuristics.append(heuristic)
         return True
@@ -2215,6 +2295,8 @@ def detect_cash_flow():
 ########################################################
 #                  H1: Balance Disorder                #
 ########################################################
+
+
 def detect_balance_disorder():
     for index in list_of_calls:
         # print("\tList of calls[%d] = %s" % (index, list_of_calls[index]))
@@ -2224,15 +2306,17 @@ def detect_balance_disorder():
                 # print(call["function_signature"])
                 heuristic = {}
                 heuristic["function_signature"] = call["function_signature"]
-                heuristic["block"]              = call["block"]
-                heuristic["type"]               = HeuristicTypes.BALANCE_DISORDER
-                heuristic["pc"]                 = call["pc"]
+                heuristic["block"] = call["block"]
+                heuristic["type"] = HeuristicTypes.BALANCE_DISORDER
+                heuristic["pc"] = call["pc"]
                 if not heuristic in heuristics:
                     heuristics.append(heuristic)
 
 ########################################################
 #                  H2: Hidden Transfer                 #
 ########################################################
+
+
 def detect_hidden_transfer():
     # for key, value in list_of_calls.iteritems():
     #     print (key, value)
@@ -2241,24 +2325,26 @@ def detect_hidden_transfer():
             for j in list_of_calls:
                 for call2 in list_of_calls[j]:
                     if i < j and call1["pc"] < call2["pc"] \
-                    and not call1["recipient"] == call2["recipient"] \
-                    and str(call1["value"]) == str(account_balance) \
-                    and str(call2["value"]) == str(account_balance) \
-                    and call1["pc"] in execution_paths[j] \
-                    and call2["pc"] in execution_paths[j] \
-                    and "Ia_store" in str(call1["recipient"]) \
-                    and "3" in str(call2["recipient"]):
+                            and not call1["recipient"] == call2["recipient"] \
+                            and str(call1["value"]) == str(account_balance) \
+                            and str(call2["value"]) == str(account_balance) \
+                            and call1["pc"] in execution_paths[j] \
+                            and call2["pc"] in execution_paths[j] \
+                            and "Ia_store" in str(call1["recipient"]) \
+                            and "3" in str(call2["recipient"]):
                         heuristic = {}
                         heuristic["function_signature"] = call1["function_signature"]
-                        heuristic["block"]              = call1["block"]
-                        heuristic["type"]               = HeuristicTypes.HIDDEN_TRANSFER
-                        heuristic["pc"]                 = call1["pc"]
+                        heuristic["block"] = call1["block"]
+                        heuristic["type"] = HeuristicTypes.HIDDEN_TRANSFER
+                        heuristic["pc"] = call1["pc"]
                         if not heuristic in heuristics:
                             heuristics.append(heuristic)
 
 ########################################################
 #               H3: Inheritance Disorder               #
 ########################################################
+
+
 def detect_inheritance_disorder():
     owner_storage_addresses = []
     for index in list_of_calls:
@@ -2266,11 +2352,13 @@ def detect_inheritance_disorder():
             if call["input_size"] == 0 and is_expr(call["value"]):
                 for condition in call["path_condition"]:
                     if is_expr(condition) and "==" in str(condition):
-                        separated_condition = remove_line_break_space(simplify(condition)).split("==")
+                        separated_condition = remove_line_break_space(
+                            simplify(condition)).split("==")
                         if (("Ia_store" in separated_condition[0] or "0" in separated_condition[0]) and "Is" in separated_condition[1]) \
-                        or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
-                            matches = re.compile("Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
-                            print(type(matches[0]))
+                                or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
+                            matches = re.compile(
+                                "Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
+                            # print(type(matches[0]))
                             if matches and not matches[0] in owner_storage_addresses:
                                 owner_storage_addresses.append(matches[0])
     if owner_storage_addresses:
@@ -2332,15 +2420,17 @@ def detect_inheritance_disorder():
                 if not sstore["address"] in owner_storage_addresses:
                     heuristic = {}
                     heuristic["function_signature"] = sstore["function_signature"]
-                    heuristic["block"]              = sstore["block"]
-                    heuristic["type"]               = HeuristicTypes.INHERITANCE_DISORDER
-                    heuristic["pc"]                 = sstore["pc"]
+                    heuristic["block"] = sstore["block"]
+                    heuristic["type"] = HeuristicTypes.INHERITANCE_DISORDER
+                    heuristic["pc"] = sstore["pc"]
                     if not heuristic in heuristics:
                         heuristics.append(heuristic)
 
 ########################################################
 #               H4: Uninitialised Structs              #
 ########################################################
+
+
 def detect_uninitialised_structs():
     list_of_relevant_sstores = []
     for struct in list_of_structs:
@@ -2355,15 +2445,15 @@ def detect_uninitialised_structs():
             for call in list_of_calls[index]:
                 for condition in call["path_condition"]:
                     # Conditions in if:
-                        # transaction receiver = msg.sender
-                        # Cv = this.balance
-                        # storage location of a struct is involved in the path conditions of a call
+                    # transaction receiver = msg.sender
+                    # Cv = this.balance
+                    # storage location of a struct is involved in the path conditions of a call
                     if "Is" in str(call["recipient"]) and str(call["value"]) == "balance_Ia" and is_expr(condition) and sstore["variable"] in get_vars(condition):
                         heuristic = {}
                         heuristic["function_signature"] = sstore["function_signature"]
-                        heuristic["block"]              = sstore["block"]
-                        heuristic["type"]               = HeuristicTypes.UNINITIALISED_STRUCT
-                        heuristic["pc"]                 = sstore["pc"]
+                        heuristic["block"] = sstore["block"]
+                        heuristic["type"] = HeuristicTypes.UNINITIALISED_STRUCT
+                        heuristic["pc"] = sstore["pc"]
                         if not heuristic in heuristics:
                             heuristics.append(heuristic)
 
@@ -2371,27 +2461,29 @@ def detect_uninitialised_structs():
                 if call["value"] == sstore["value"] and (is_expr(call["value"]) or call["value"] > 0):
                     heuristic = {}
                     heuristic["function_signature"] = sstore["function_signature"]
-                    heuristic["block"]              = sstore["block"]
-                    heuristic["type"]               = HeuristicTypes.UNINITIALISED_STRUCT
-                    heuristic["pc"]                 = sstore["pc"]
+                    heuristic["block"] = sstore["block"]
+                    heuristic["type"] = HeuristicTypes.UNINITIALISED_STRUCT
+                    heuristic["pc"] = sstore["pc"]
                     if not heuristic in heuristics:
                         heuristics.append(heuristic)
 
-        #If there's a kill() function and msg.sender(== sstore variable) is involved in the condition
+        # If there's a kill() function and msg.sender(== sstore variable) is involved in the condition
         for suicide in list_of_suicides:
             for condition in suicide["path_condition"]:
                 if is_expr(condition) and sstore["variable"] in get_vars(condition):
                     heuristic = {}
                     heuristic["function_signature"] = sstore["function_signature"]
-                    heuristic["block"]              = sstore["block"]
-                    heuristic["type"]               = HeuristicTypes.UNINITIALISED_STRUCT
-                    heuristic["pc"]                 = sstore["pc"]
+                    heuristic["block"] = sstore["block"]
+                    heuristic["type"] = HeuristicTypes.UNINITIALISED_STRUCT
+                    heuristic["pc"] = sstore["pc"]
                     if not heuristic in heuristics:
                         heuristics.append(heuristic)
 
 ########################################################
 #              H5: Type Deduction Overflow             #
 ########################################################
+
+
 def detect_type_deduction_overflow():
     s = Solver()
     s.set("timeout", global_params.TIMEOUT)
@@ -2401,8 +2493,8 @@ def detect_type_deduction_overflow():
         for call in list_of_calls[index]:
             # pretty_printer = pprint.PrettyPrinter()
             # pretty_printer.pprint(list_of_calls)
-            #if Conditions:
-                # transaction sender = the one who the money is transfered to (msg.sender.transfer())
+            # if Conditions:
+            # transaction sender = the one who the money is transfered to (msg.sender.transfer())
             if "Is" in str(call["recipient"]) and call["input_size"] == 0 and not is_expr(call["value"]) and call["value"] > 0:
                 for mul_pc in list_of_multiplications:
                     if mul_pc < call["pc"]:
@@ -2410,20 +2502,21 @@ def detect_type_deduction_overflow():
                             print(var_pc)
                             if mul_pc == var_pc-3:
                                 if call["value"] in list_of_multiplications[mul_pc] \
-                                and call["value"] in list_of_vars[var_pc]:
+                                        and call["value"] in list_of_vars[var_pc]:
                                     heuristic = {}
                                     heuristic["function_signature"] = call["function_signature"]
-                                    heuristic["block"]              = call["block"]
-                                    heuristic["type"]               = HeuristicTypes.TYPE_DEDUCTION_OVERFLOW
-                                    heuristic["pc"]                 = mul_pc
+                                    heuristic["block"] = call["block"]
+                                    heuristic["type"] = HeuristicTypes.TYPE_DEDUCTION_OVERFLOW
+                                    heuristic["pc"] = mul_pc
                                     if not heuristic in heuristics:
                                         heuristics.append(heuristic)
                 for add_pc in list_of_additions:
                     for var_pc in list_of_vars:
                         if add_pc < var_pc < call["pc"]:
                             if call["value"] in list_of_additions[add_pc] \
-                            and call["value"] in list_of_vars[var_pc]:
-                                path_conditions = copy.deepcopy(call["path_condition"])
+                                    and call["value"] in list_of_vars[var_pc]:
+                                path_conditions = copy.deepcopy(
+                                    call["path_condition"])
                                 if False in path_conditions:
                                     path_conditions.remove(False)
                                 s.reset()
@@ -2433,23 +2526,25 @@ def detect_type_deduction_overflow():
                                 if s.check() == sat:
                                     heuristic = {}
                                     heuristic["function_signature"] = call["function_signature"]
-                                    heuristic["block"]              = call["block"]
-                                    heuristic["type"]               = HeuristicTypes.TYPE_DEDUCTION_OVERFLOW
-                                    heuristic["pc"]                 = add_pc
+                                    heuristic["block"] = call["block"]
+                                    heuristic["type"] = HeuristicTypes.TYPE_DEDUCTION_OVERFLOW
+                                    heuristic["pc"] = add_pc
                                     if not heuristic in heuristics:
                                         heuristics.append(heuristic)
 
 ########################################################
 #             H6: Skip Empty String Literal            #
 ########################################################
+
+
 def detect_skip_empty_string_literal():
     for index in list_of_calls:
         for call in list_of_calls[index]:
-            #if Conditions:
-                # input_size = int/ long
-                # input_size > 0
-                # There is a path to this call
-                # 
+            # if Conditions:
+            # input_size = int/ long
+            # input_size > 0
+            # There is a path to this call
+            #
             if isReal(call["input_size"]) and call["input_size"] > 0 and is_expr(call["recipient"]) and any([True for var in get_vars(call["recipient"]) if str(var) == "Ia"]):
                 if call["input_offset"] in call["memory"]:
                     function_signature = call["memory"][call["input_offset"]]/26959946667150639794667015087019630673637144422540572481103610249216L
@@ -2460,15 +2555,17 @@ def detect_skip_empty_string_literal():
                                     if call2["type"] == "CALL" and call2["input_size"] == 0 and "Id_" in str(call2["recipient"]):
                                         heuristic = {}
                                         heuristic["function_signature"] = call2["function_signature"]
-                                        heuristic["block"]              = call2["block"]
-                                        heuristic["type"]               = HeuristicTypes.SKIP_EMPTY_STRING_LITERAL
-                                        heuristic["pc"]                 = call2["pc"]
+                                        heuristic["block"] = call2["block"]
+                                        heuristic["type"] = HeuristicTypes.SKIP_EMPTY_STRING_LITERAL
+                                        heuristic["pc"] = call2["pc"]
                                         if not heuristic in heuristics:
                                             heuristics.append(heuristic)
 
 ########################################################
 #                H7: Hidden State Update               #
 ########################################################
+
+
 def detect_hidden_state_update():
     # print(len(list_of_calls))
     for index in list_of_calls:
@@ -2486,20 +2583,25 @@ def detect_hidden_state_update():
                 if s.check() == sat:
                     check_if_path_conditions_depend_on_storage(call, [], 0)
 
+
 def get_function_signature_from_path_condition(path_condition):
     for condition in path_condition:
         if is_expr(condition) and str(condition).startswith("If(Extract(255, 224, Id_1) == "):
-            match = re.compile("Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(condition))
+            match = re.compile(
+                "Extract\(255, 224, Id_1\) == ([0-9]+)").findall(str(condition))
             if match:
                 return int(match[0])
     return None
 
+
 def extract_storage_location_range(condition, variable):
     if is_expr(condition):
-        matches = re.compile("Extract\((.+?), (.+?), "+str(variable)+"\)").findall(str(simplify(condition)))
+        matches = re.compile(
+            "Extract\((.+?), (.+?), "+str(variable)+"\)").findall(str(simplify(condition)))
         if matches:
             return matches[0]
     return None
+
 
 def check_if_path_conditions_depend_on_storage(origin, visitedx, depth):
     message_value_comparison = []
@@ -2515,7 +2617,8 @@ def check_if_path_conditions_depend_on_storage(origin, visitedx, depth):
                 if "Ia_store" in str(condition) and not "Iv" in str(condition):
                     for var in get_vars(condition):
                         if str(var).startswith("Ia_store"):
-                            storage_location_range = extract_storage_location_range(condition, var)
+                            storage_location_range = extract_storage_location_range(
+                                condition, var)
                             visited_pcs = []
                             for sstore in list_of_sstores:
                                 if not sstore["pc"] in visited_pcs and sstore["function_signature"] != origin["function_signature"]:
@@ -2526,44 +2629,56 @@ def check_if_path_conditions_depend_on_storage(origin, visitedx, depth):
                                                 message_value_path_conditions = []
                                                 for condition in sstore["path_condition"]:
                                                     if "Iv" in str(condition):
-                                                        message_value_path_conditions.append(condition)
-                                                s.add(message_value_path_conditions)
+                                                        message_value_path_conditions.append(
+                                                            condition)
+                                                s.add(
+                                                    message_value_path_conditions)
                                                 s.add(message_value == 0)
                                                 if s.check() == sat:
                                                     s.reset()
-                                                    s.add(origin["path_condition"])
-                                                    s.add(sstore["variable"] == sstore["value"])
+                                                    s.add(
+                                                        origin["path_condition"])
+                                                    s.add(
+                                                        sstore["variable"] == sstore["value"])
                                                     if s.check() == unsat:
-                                                        visited_pcs.append(sstore["pc"])
+                                                        visited_pcs.append(
+                                                            sstore["pc"])
                                                         heuristic = {}
                                                         heuristic["function_signature"] = sstore["function_signature"]
-                                                        heuristic["block"]              = sstore["block"]
-                                                        heuristic["type"]               = HeuristicTypes.HIDDEN_STATE_UPDATE
-                                                        heuristic["pc"]                 = sstore["pc"]
+                                                        heuristic["block"] = sstore["block"]
+                                                        heuristic["type"] = HeuristicTypes.HIDDEN_STATE_UPDATE
+                                                        heuristic["pc"] = sstore["pc"]
                                                         if not heuristic in heuristics:
-                                                            heuristics.append(heuristic)
+                                                            heuristics.append(
+                                                                heuristic)
                                         else:
                                             if not any([True for path_condition in sstore["path_condition"] if storage_location_range == extract_storage_location_range(path_condition, sstore["variable"])]):
                                                 s.reset()
                                                 message_value_path_conditions = []
                                                 for condition in sstore["path_condition"]:
                                                     if "Iv" in str(condition):
-                                                        message_value_path_conditions.append(condition)
-                                                s.add(message_value_path_conditions)
+                                                        message_value_path_conditions.append(
+                                                            condition)
+                                                s.add(
+                                                    message_value_path_conditions)
                                                 s.add(message_value == 0)
                                                 if s.check() == sat:
                                                     s.reset()
-                                                    s.add(origin["path_condition"])
-                                                    s.add(sstore["variable"] == sstore["value"])
+                                                    s.add(
+                                                        origin["path_condition"])
+                                                    s.add(
+                                                        sstore["variable"] == sstore["value"])
                                                     if s.check() == unsat:
-                                                        visited_pcs.append(sstore["pc"])
+                                                        visited_pcs.append(
+                                                            sstore["pc"])
                                                         heuristic = {}
                                                         heuristic["function_signature"] = sstore["function_signature"]
-                                                        heuristic["block"]              = sstore["block"]
-                                                        heuristic["type"]               = HeuristicTypes.HIDDEN_STATE_UPDATE
-                                                        heuristic["pc"]                 = sstore["pc"]
+                                                        heuristic["block"] = sstore["block"]
+                                                        heuristic["type"] = HeuristicTypes.HIDDEN_STATE_UPDATE
+                                                        heuristic["pc"] = sstore["pc"]
                                                         if not heuristic in heuristics:
-                                                            heuristics.append(heuristic)
+                                                            heuristics.append(
+                                                                heuristic)
     else:
         for condition_1 in origin["path_condition"]:
             if "Ia_store" in str(condition_1):
@@ -2590,26 +2705,35 @@ def check_if_path_conditions_depend_on_storage(origin, visitedx, depth):
                                                                     message_value_path_conditions = []
                                                                     for condition in sstore_2["path_condition"]:
                                                                         if "Iv" in str(condition):
-                                                                            message_value_path_conditions.append(condition)
-                                                                    s.add(message_value_path_conditions)
-                                                                    s.add(message_value == 0)
+                                                                            message_value_path_conditions.append(
+                                                                                condition)
+                                                                    s.add(
+                                                                        message_value_path_conditions)
+                                                                    s.add(
+                                                                        message_value == 0)
                                                                     if s.check() == sat:
                                                                         s.reset()
-                                                                        s.add(sstore_1["path_condition"])
-                                                                        s.add(sstore_2["variable"] == sstore_2["value"])
+                                                                        s.add(
+                                                                            sstore_1["path_condition"])
+                                                                        s.add(
+                                                                            sstore_2["variable"] == sstore_2["value"])
                                                                         if s.check() == unsat:
-                                                                            visited_pcs.append(sstore_2["pc"])
+                                                                            visited_pcs.append(
+                                                                                sstore_2["pc"])
                                                                             heuristic = {}
                                                                             heuristic["function_signature"] = sstore_2["function_signature"]
-                                                                            heuristic["block"]              = sstore_2["block"]
-                                                                            heuristic["type"]               = HeuristicTypes.HIDDEN_STATE_UPDATE
-                                                                            heuristic["pc"]                 = sstore_2["pc"]
+                                                                            heuristic["block"] = sstore_2["block"]
+                                                                            heuristic["type"] = HeuristicTypes.HIDDEN_STATE_UPDATE
+                                                                            heuristic["pc"] = sstore_2["pc"]
                                                                             if not heuristic in heuristics:
-                                                                                heuristics.append(heuristic)
+                                                                                heuristics.append(
+                                                                                    heuristic)
 
 ########################################################
 #                 H8: Straw Man Contract               #
 ########################################################
+
+
 def detect_straw_man_contract():
     call_pcs = []
     for index in list_of_calls:
@@ -2622,42 +2746,46 @@ def detect_straw_man_contract():
                 for index2 in list_of_calls:
                     for call2 in list_of_calls[index2]:
                         if call["pc"] != call2["pc"] \
-                        and call["function_signature"] == call2["function_signature"] \
-                        and str(call["recipient"]) != str(call2["recipient"]) \
-                        and "Ia_store_" in str(call2["recipient"]) \
-                        and (is_expr(call2["input_size"]) or call2["input_size"] > 0) \
-                        and any([True for index in execution_paths if call["pc"] in execution_paths[index] and call2["pc"] in execution_paths[index] and len(list(set(call_pcs) & set(execution_paths[index]))) == 2]) \
-                        and all(condition in call2["path_condition"] for condition in call["path_condition"]):
+                                and call["function_signature"] == call2["function_signature"] \
+                                and str(call["recipient"]) != str(call2["recipient"]) \
+                                and "Ia_store_" in str(call2["recipient"]) \
+                                and (is_expr(call2["input_size"]) or call2["input_size"] > 0) \
+                                and any([True for index in execution_paths if call["pc"] in execution_paths[index] and call2["pc"] in execution_paths[index] and len(list(set(call_pcs) & set(execution_paths[index]))) == 2]) \
+                                and all(condition in call2["path_condition"] for condition in call["path_condition"]):
                             if call2["type"] == "DELEGATECALL" and call["pc"] > call2["pc"] and str(call["value"]) == str(account_balance) and ("Is" in str(call["recipient"]) or "Id" in str(call["recipient"])):
                                 message_value_path_conditions = []
                                 for condition in call["path_condition"]:
                                     if "Iv" in str(condition):
-                                        message_value_path_conditions.append(condition)
+                                        message_value_path_conditions.append(
+                                            condition)
                                 message_value_path_conditions2 = []
                                 for condition in call2["path_condition"]:
                                     if "Iv" in str(condition):
-                                        message_value_path_conditions2.append(condition)
+                                        message_value_path_conditions2.append(
+                                            condition)
                                 if any([True for condition in message_value_path_conditions if "Iv" in str(condition) and "Ia_store" in str(condition)]) \
-                                and any([True for condition in message_value_path_conditions2 if "Iv" in str(condition) and "Ia_store" in str(condition)]):
+                                        and any([True for condition in message_value_path_conditions2 if "Iv" in str(condition) and "Ia_store" in str(condition)]):
                                     heuristic = {}
                                     heuristic["function_signature"] = call2["function_signature"]
-                                    heuristic["block"]              = call2["block"]
-                                    heuristic["type"]               = HeuristicTypes.STRAW_MAN_CONTRACT
-                                    heuristic["pc"]                 = call2["pc"]
+                                    heuristic["block"] = call2["block"]
+                                    heuristic["type"] = HeuristicTypes.STRAW_MAN_CONTRACT
+                                    heuristic["pc"] = call2["pc"]
                                     if not heuristic in heuristics:
                                         heuristics.append(heuristic)
                             if call2["type"] == "CALL" and call["pc"] < call2["pc"] and not "2300" in str(call["gas"]) and call["input_size"] == 0 and not is_expr(call2["input_size"]) and any([True for i in range(call2["input_size"]/32) if call2["input_offset"]+4+i*32 in call2["memory"] and "Is" in str(call2["memory"][call2["input_offset"]+4+i*32])]):
                                 heuristic = {}
                                 heuristic["function_signature"] = call2["function_signature"]
-                                heuristic["block"]              = call2["block"]
-                                heuristic["type"]               = HeuristicTypes.STRAW_MAN_CONTRACT
-                                heuristic["pc"]                 = call2["pc"]
+                                heuristic["block"] = call2["block"]
+                                heuristic["type"] = HeuristicTypes.STRAW_MAN_CONTRACT
+                                heuristic["pc"] = call2["pc"]
                                 if not heuristic in heuristics:
                                     heuristics.append(heuristic)
 
 ########################################################
 #             H9: Map Key Encoding Trick               #
-########################################################     
+########################################################
+
+
 def detect_map_key_encoding_trick():
     # owner_storage_addresses : the adress of the variable that is used in the comparison with msg.sender
     # Ia_store_(owner_storage_addresses)
@@ -2669,17 +2797,19 @@ def detect_map_key_encoding_trick():
                     # check to see if there's a call whose path conditions contain a comparison between Is and a storage variable(Ia_store)
                     # ==> If(Extract(159,0,Ia_store_0) == Extract(159, 0, Is)
                     if is_expr(condition) and "==" in str(condition):
-                        separated_condition = remove_line_break_space(simplify(condition)).split("==")
+                        separated_condition = remove_line_break_space(
+                            simplify(condition)).split("==")
                         if (("Ia_store" in separated_condition[0] or "0" in separated_condition[0]) and "Is" in separated_condition[1]) \
-                        or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
+                                or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
                             # find the string here : Ia_store_"  HERE  ", which is the address for the storage location of the variable in the if statement of the path condition
-                            matches = re.compile("Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
+                            matches = re.compile(
+                                "Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
                             if matches and not matches[0] in owner_storage_addresses:
                                 owner_storage_addresses.append(matches[0])
 
     for x in range(len(owner_storage_addresses)):
         # checks to see if Ia_store_( addrr ), addrr is hex number(which means there was a string(key map) in the comparison)
-        if owner_storage_addresses and int(owner_storage_addresses[x],16):
+        if owner_storage_addresses and int(owner_storage_addresses[x], 16):
             message_value_sstores = []
             for sstore in list_of_sstores:
                 if "Iv" in str(sstore["value"]):
@@ -2739,9 +2869,9 @@ def detect_map_key_encoding_trick():
                     if not sstore["address"] in owner_storage_addresses:
                         heuristic = {}
                         heuristic["function_signature"] = sstore["function_signature"]
-                        heuristic["block"]              = sstore["block"]
-                        heuristic["type"]               = HeuristicTypes.MAP_KEY_ENCODING_TRICK
-                        heuristic["pc"]                 = sstore["pc"]
+                        heuristic["block"] = sstore["block"]
+                        heuristic["type"] = HeuristicTypes.MAP_KEY_ENCODING_TRICK
+                        heuristic["pc"] = sstore["pc"]
                         if not heuristic in heuristics:
                             heuristics.append(heuristic)
 
@@ -2749,20 +2879,22 @@ def detect_map_key_encoding_trick():
 #               H10: Inheritance Disorder               #
 ########################################################
 
+
 def detect_my_tesst():
     for index in list_of_calls:
         # print("\tList of calls[%d] = %s" % (index, list_of_calls[index]))
         for call in list_of_calls[index]:
-                # print(call)
+            # print(call)
             if call["block"] in infeasible_blocks and is_expr(call["value"]) and ("balance_Ia + Iv" == str(call["value"]) or "Iv + balance_Ia" == str(call["value"])):
-                    # print(call["function_signature"])
+                # print(call["function_signature"])
                 heuristic = {}
                 heuristic["function_signature"] = call["function_signature"]
-                heuristic["block"]              = call["block"]
-                heuristic["type"]               = HeuristicTypes.MY_TESST
-                heuristic["pc"]                 = call["pc"]
+                heuristic["block"] = call["block"]
+                heuristic["type"] = HeuristicTypes.MY_TESST
+                heuristic["pc"] = call["pc"]
                 if not heuristic in heuristics:
                     heuristics.append(heuristic)
+
 
 def detect_honeypots():
     if detect_cash_flow():
@@ -2772,47 +2904,56 @@ def detect_honeypots():
         detect_balance_disorder()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Balance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Balance disorder: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_hidden_transfer()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Hidden transfer: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Hidden transfer: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_inheritance_disorder()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Inheritance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Inheritance disorder: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_uninitialised_structs()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Uninitialised structs:  "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Uninitialised structs:  " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_type_deduction_overflow()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Type overflow: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Type overflow: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_skip_empty_string_literal()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Skip empty string: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Skip empty string: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_hidden_state_update()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Hidden state update: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Hidden state update: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_straw_man_contract()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Straw man contract: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Straw man contract: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             log.info("\t---------- End Time ----------")
         detect_map_key_encoding_trick()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Map key encoding trick: \t "+str(math.ceil(elapsed_time))+" seconds")
+            log.info("\t Map key encoding trick: \t " +
+                     str(math.ceil(elapsed_time))+" seconds")
             log.info("\t---------- End Time ----------")
         detect_my_tesst()
         if global_params.DEBUG_MODE:
@@ -2820,17 +2961,28 @@ def detect_honeypots():
             log.info("\t My tesst: \t "+str(math.ceil(elapsed_time))+" seconds")
             log.info("\t---------- End Time ----------")
 
-    money_flow_found                = any([HeuristicTypes.MONEY_FLOW                in heuristic["type"] for heuristic in heuristics])
-    balance_disorder_found          = any([HeuristicTypes.BALANCE_DISORDER          in heuristic["type"] for heuristic in heuristics])
-    hidden_transfer_found           = any([HeuristicTypes.HIDDEN_TRANSFER           in heuristic["type"] for heuristic in heuristics])
-    inheritance_disorder_found      = any([HeuristicTypes.INHERITANCE_DISORDER      in heuristic["type"] for heuristic in heuristics])
-    uninitialised_struct_found      = any([HeuristicTypes.UNINITIALISED_STRUCT      in heuristic["type"] for heuristic in heuristics])
-    type_deduction_overflow_found   = any([HeuristicTypes.TYPE_DEDUCTION_OVERFLOW   in heuristic["type"] for heuristic in heuristics])
-    skip_empty_string_literal_found = any([HeuristicTypes.SKIP_EMPTY_STRING_LITERAL in heuristic["type"] for heuristic in heuristics])
-    hidden_state_update_found       = any([HeuristicTypes.HIDDEN_STATE_UPDATE       in heuristic["type"] for heuristic in heuristics])
-    straw_man_contract_found        = any([HeuristicTypes.STRAW_MAN_CONTRACT        in heuristic["type"] for heuristic in heuristics])
-    map_key_encoding_trick_found    = any([HeuristicTypes.MAP_KEY_ENCODING_TRICK    in heuristic["type"] for heuristic in heuristics])
-    my_tesst_found                   = any([HeuristicTypes.MY_TESST        in heuristic["type"] for heuristic in heuristics])
+    money_flow_found = any(
+        [HeuristicTypes.MONEY_FLOW in heuristic["type"] for heuristic in heuristics])
+    balance_disorder_found = any(
+        [HeuristicTypes.BALANCE_DISORDER in heuristic["type"] for heuristic in heuristics])
+    hidden_transfer_found = any(
+        [HeuristicTypes.HIDDEN_TRANSFER in heuristic["type"] for heuristic in heuristics])
+    inheritance_disorder_found = any(
+        [HeuristicTypes.INHERITANCE_DISORDER in heuristic["type"] for heuristic in heuristics])
+    uninitialised_struct_found = any(
+        [HeuristicTypes.UNINITIALISED_STRUCT in heuristic["type"] for heuristic in heuristics])
+    type_deduction_overflow_found = any(
+        [HeuristicTypes.TYPE_DEDUCTION_OVERFLOW in heuristic["type"] for heuristic in heuristics])
+    skip_empty_string_literal_found = any(
+        [HeuristicTypes.SKIP_EMPTY_STRING_LITERAL in heuristic["type"] for heuristic in heuristics])
+    hidden_state_update_found = any(
+        [HeuristicTypes.HIDDEN_STATE_UPDATE in heuristic["type"] for heuristic in heuristics])
+    straw_man_contract_found = any(
+        [HeuristicTypes.STRAW_MAN_CONTRACT in heuristic["type"] for heuristic in heuristics])
+    map_key_encoding_trick_found = any(
+        [HeuristicTypes.MAP_KEY_ENCODING_TRICK in heuristic["type"] for heuristic in heuristics])
+    my_tesst_found = any(
+        [HeuristicTypes.MY_TESST in heuristic["type"] for heuristic in heuristics])
 
     if source_map:
         # Money flow
@@ -2838,7 +2990,8 @@ def detect_honeypots():
         s = "\t Money flow:    \t "+str(money_flow_found)
         log.info(s)
         # Balance disorder
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.BALANCE_DISORDER in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.BALANCE_DISORDER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Balance disorder")
@@ -2847,7 +3000,8 @@ def detect_honeypots():
         s = "\t Balance disorder: \t "+str(balance_disorder_found) + s
         log.info(s)
         # Hidden transfer
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.HIDDEN_TRANSFER in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.HIDDEN_TRANSFER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Hidden transfer")
@@ -2856,7 +3010,8 @@ def detect_honeypots():
         s = "\t Hidden transfer: \t "+str(hidden_transfer_found) + s
         log.info(s)
         # Inheritance disorder
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.INHERITANCE_DISORDER in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.INHERITANCE_DISORDER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Inheritance disorder")
@@ -2865,7 +3020,8 @@ def detect_honeypots():
         s = "\t Inheritance disorder: \t "+str(inheritance_disorder_found) + s
         log.info(s)
         # Uninitialised struct
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.UNINITIALISED_STRUCT in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.UNINITIALISED_STRUCT in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Uninitialised struct")
@@ -2874,7 +3030,8 @@ def detect_honeypots():
         s = "\t Uninitialised struct: \t "+str(uninitialised_struct_found) + s
         log.info(s)
         # Type deduction overflow
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.TYPE_DEDUCTION_OVERFLOW in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.TYPE_DEDUCTION_OVERFLOW in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Type deduction overflow")
@@ -2883,16 +3040,19 @@ def detect_honeypots():
         s = "\t Type overflow: \t "+str(type_deduction_overflow_found) + s
         log.info(s)
         # Skip empty string literal
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.SKIP_EMPTY_STRING_LITERAL in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.SKIP_EMPTY_STRING_LITERAL in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Skip empty string literal")
         if s:
             results["skip_empty_string_literal"] = s
-        s = "\t Skip empty string: \t "+str(skip_empty_string_literal_found) + s
+        s = "\t Skip empty string: \t " + \
+            str(skip_empty_string_literal_found) + s
         log.info(s)
         # Hidden State Update
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.HIDDEN_STATE_UPDATE in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.HIDDEN_STATE_UPDATE in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Hidden state update")
@@ -2901,7 +3061,8 @@ def detect_honeypots():
         s = "\t Hidden state update: \t "+str(hidden_state_update_found) + s
         log.info(s)
         # Straw Man Contract
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.STRAW_MAN_CONTRACT in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.STRAW_MAN_CONTRACT in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Straw man contract")
@@ -2910,16 +3071,19 @@ def detect_honeypots():
         s = "\t Straw man contract: \t "+str(straw_man_contract_found) + s
         log.info(s)
         # Map key encoding
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.MAP_KEY_ENCODING_TRICK in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.MAP_KEY_ENCODING_TRICK in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "Map key encoding trick")
         if s:
             results["map_key_encoding_trick"] = s
-        s = "\t Map key encoding trick: \t "+str(map_key_encoding_trick_found) + s
+        s = "\t Map key encoding trick: \t " + \
+            str(map_key_encoding_trick_found) + s
         log.info(s)
         # My Tesst
-        pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.MY_TESST in heuristic["type"]]
+        pcs = [heuristic["pc"]
+               for heuristic in heuristics if HeuristicTypes.MY_TESST in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
         pcs = source_map.reduce_same_position_pcs(pcs)
         s = source_map.to_str(pcs, "My tesst")
@@ -2966,12 +3130,14 @@ def detect_honeypots():
         log.info(s)
         # Map key encoding trick
         results["map_key_encoding_trick_found"] = map_key_encoding_trick_found
-        s = "\t Map_key_encoding_trick_found: \t "+str(map_key_encoding_trick_found)
+        s = "\t Map_key_encoding_trick_found: \t " + \
+            str(map_key_encoding_trick_found)
         log.info(s)
         # My tesst
         results["my_tesst"] = my_tesst_found
         s = "\t My tesst: \t "+str(my_tesst_found)
         log.info(s)
+
 
 def detect_bugs():
     global results
@@ -2984,7 +3150,8 @@ def detect_bugs():
         print ""
 
     if instructions:
-        evm_code_coverage = float(len(visited_pcs)) / len(instructions.keys()) * 100
+        evm_code_coverage = float(len(visited_pcs)) / \
+            len(instructions.keys()) * 100
         log.info("\t EVM code coverage: \t %s%%", round(evm_code_coverage, 1))
         results["evm_code_coverage"] = str(round(evm_code_coverage, 1))
 
@@ -3018,13 +3185,13 @@ def detect_bugs():
         results["execution_paths"] = str(total_no_of_paths)
         results["timeout"] = g_timeout
 
-
     # ??????????????????????
     if len(heuristics) > 0:
         for heuristic in heuristics:
             if heuristic["function_signature"]:
                 if heuristic["function_signature"]:
-                    method = "{0:#0{1}x}".format(heuristic["function_signature"], 10)
+                    method = "{0:#0{1}x}".format(
+                        heuristic["function_signature"], 10)
                 else:
                     method = ""
                 if not method in results["attack_methods"]:
@@ -3033,12 +3200,14 @@ def detect_bugs():
             for call in list_of_calls[index]:
                 if call["type"] == "CALL" and call["input_size"] == 0:
                     if call["function_signature"]:
-                        method = "{0:#0{1}x}".format(call["function_signature"], 10)
+                        method = "{0:#0{1}x}".format(
+                            call["function_signature"], 10)
                     else:
                         method = ""
                     if not method in results["cashout_methods"]:
                         results["cashout_methods"].append(method)
-    #???????????????????????
+    # ???????????????????????
+
 
 def closing_message():
     global c_name
@@ -3046,11 +3215,14 @@ def closing_message():
 
     log.info("\t====== Analysis Completed ======")
     if global_params.STORE_RESULT:
-        result_file = os.path.join(global_params.RESULTS_DIR, c_name+'.json'.split('/')[-1])
+        result_file = os.path.join(
+            global_params.RESULTS_DIR, c_name+'.json'.split('/')[-1])
         if '.sol' in c_name:
-            result_file = os.path.join(global_params.RESULTS_DIR, c_name.split(':')[0].replace('.sol', '.json').split('/')[-1])
+            result_file = os.path.join(global_params.RESULTS_DIR, c_name.split(':')[
+                                       0].replace('.sol', '.json').split('/')[-1])
         elif '.bin.evm.disasm' in c_name:
-            result_file = os.path.join(global_params.RESULTS_DIR, c_name.replace('.bin.evm.disasm', '.json').split('/')[-1])
+            result_file = os.path.join(global_params.RESULTS_DIR, c_name.replace(
+                '.bin.evm.disasm', '.json').split('/')[-1])
         mode = 'a'
         if global_params.BYTECODE:
             mode = 'w'
@@ -3058,15 +3230,18 @@ def closing_message():
             with open(result_file, mode) as of:
                 if ':' in c_name:
                     of.write("{")
-                    of.write('"'+str(c_name.split(':')[1].replace('.evm.disasm', ''))+'":')
+                    of.write('"'+str(c_name.split(':')
+                             [1].replace('.evm.disasm', ''))+'":')
                 of.write(json.dumps(results, indent=1))
         else:
             with open(result_file, mode) as of:
                 if ':' in c_name:
                     of.write(",")
-                    of.write('"'+str(c_name.split(':')[1].replace('.evm.disasm', ''))+'":')
+                    of.write('"'+str(c_name.split(':')
+                             [1].replace('.evm.disasm', ''))+'":')
                 of.write(json.dumps(results, indent=1))
         log.info("Wrote results to %s.", result_file)
+
 
 def handler(signum, frame):
     global g_timeout
@@ -3075,16 +3250,59 @@ def handler(signum, frame):
     g_timeout = True
     raise Exception("timeout")
 
-def main(contract, contract_sol, _source_map = None):
+
+def analyze_constructor_variables(contract, contract_sol, _source_map=None):
     global c_name
     global c_name_sol
     global source_map
     global start_time
+    global log_file
+    global constructor_variables
+    global is_constructor
 
+    constructor_variables = {}
     c_name = contract
     c_name_sol = contract_sol
     source_map = _source_map
+    is_constructor = True
 
+    initGlobalVars()
+    set_cur_file(c_name[4:] if len(c_name) > 5 else c_name)
+    start_time = time.time()
+    if hasattr(signal, 'SIGALRM'):
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(global_params.GLOBAL_TIMEOUT)
+    try:
+        build_cfg_and_analyze()
+        log.debug("Done Symbolic execution")
+    except Exception as e:
+        if global_params.DEBUG_MODE:
+            traceback.print_exc()
+        if str(e) == "timeout":
+            pass
+        else:
+            print("Contract: "+str(c_name_sol))
+            pass
+
+    if callable(getattr(signal, "alarm", None)):
+        signal.alarm(0)
+
+    log_file.close()
+    for sstore in list_of_sstores:
+        constructor_variables[sstore["variable"]] = sstore["value"]
+
+
+def main(contract, contract_sol, _source_map=None):
+    global c_name
+    global c_name_sol
+    global source_map
+    global start_time
+    global is_constructor
+    c_name = contract
+    c_name_sol = contract_sol
+    source_map = _source_map
+    print(constructor_variables)
+    is_constructor = False
     initGlobalVars()
     set_cur_file(c_name[4:] if len(c_name) > 5 else c_name)
     start_time = time.time()
@@ -3112,7 +3330,10 @@ def main(contract, contract_sol, _source_map = None):
     log.info("\t============ Results ===========")
 
     detect_bugs()
+    # for sstore in list_of_sstores:
+    #     print(sstore["variable"],sstore["value"])
     closing_message()
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
