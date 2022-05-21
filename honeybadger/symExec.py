@@ -2068,9 +2068,7 @@ def sym_exec_ins(params):
             if not total_no_of_paths in list_of_calls:
                 list_of_calls[total_no_of_paths] = []
             if call not in list_of_calls[total_no_of_paths]:
-                # print("test")
                 list_of_calls[total_no_of_paths].append(call)
-                # print(list_of_calls)
             # in the paper, it is shaky when the size of data output is
             # min of stack[6] and the | o |
             if isReal(transfer_amount) and transfer_amount == 0:
@@ -3251,6 +3249,7 @@ def handler(signum, frame):
     raise Exception("timeout")
 
 
+# CONSS
 def analyze_constructor_variables(contract, contract_sol, _source_map=None):
     global c_name
     global c_name_sol
@@ -3289,7 +3288,14 @@ def analyze_constructor_variables(contract, contract_sol, _source_map=None):
 
     log_file.close()
     for sstore in list_of_sstores:
-        constructor_variables[sstore["variable"]] = sstore["value"]
+        if not "sstore" in constructor_variables:
+            constructor_variables["sstore"] = []
+        if sstore not in constructor_variables["sstore"]:
+            constructor_variables["sstore"].append(sstore)
+    # print(constructor_variables)
+
+    # for sstore in list_of_sstores:
+    #     constructor_variables[sstore["variable"]] = sstore["value"]
 
 
 def main(contract, contract_sol, _source_map=None):
