@@ -23,6 +23,7 @@ from basicblock import BasicBlock
 from analysis import *
 from decimal import Decimal
 
+pretty_printer = pprint.PrettyPrinter()
 log = logging.getLogger(__name__)
 
 UNSIGNED_BOUND_NUMBER = 2**256 - 1
@@ -3292,10 +3293,6 @@ def analyze_constructor_variables(contract, contract_sol, _source_map=None):
             constructor_variables["sstore"] = []
         if sstore not in constructor_variables["sstore"]:
             constructor_variables["sstore"].append(sstore)
-    # print(constructor_variables)
-
-    # for sstore in list_of_sstores:
-    #     constructor_variables[sstore["variable"]] = sstore["value"]
 
 
 def main(contract, contract_sol, _source_map=None):
@@ -3307,7 +3304,7 @@ def main(contract, contract_sol, _source_map=None):
     c_name = contract
     c_name_sol = contract_sol
     source_map = _source_map
-    print(constructor_variables)
+    pretty_printer.pprint(constructor_variables)
     is_constructor = False
     initGlobalVars()
     set_cur_file(c_name[4:] if len(c_name) > 5 else c_name)

