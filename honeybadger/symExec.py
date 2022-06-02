@@ -43,9 +43,7 @@ HeuristicTypes = enum(
     TYPE_DEDUCTION_OVERFLOW="Type deduction overflow",
     SKIP_EMPTY_STRING_LITERAL="Skip empty string literal",
     HIDDEN_STATE_UPDATE="Hidden state update",
-    STRAW_MAN_CONTRACT="Straw man contract",
-    MAP_KEY_ENCODING_TRICK="Map key encoding",
-    MY_TESST="My_tesst"
+    STRAW_MAN_CONTRACT="Straw man contract"
 )
 
 
@@ -95,8 +93,6 @@ def initGlobalVars():
         "inheritance_disorder": False, "uninitialised_struct": False,
         "type_deduction_overflow": False, "skip_empty_string_literal": False,
         "hidden_state_update": False, "straw_man_contract": False,
-        "map_key_encoding_trick": False,
-        "my_tesst": False,
         "attack_methods": [], "cashout_methods": []
     }
 
@@ -2298,11 +2294,8 @@ def detect_cash_flow():
 
 def detect_balance_disorder():
     for index in list_of_calls:
-        # print("\tList of calls[%d] = %s" % (index, list_of_calls[index]))
         for call in list_of_calls[index]:
-            # print(call)
             if call["block"] in infeasible_blocks and is_expr(call["value"]) and ("balance_Ia + Iv" == str(call["value"]) or "Iv + balance_Ia" == str(call["value"])):
-                # print(call["function_signature"])
                 heuristic = {}
                 heuristic["function_signature"] = call["function_signature"]
                 heuristic["block"] = call["block"]
@@ -2317,8 +2310,6 @@ def detect_balance_disorder():
 
 
 def detect_hidden_transfer():
-    # for key, value in list_of_calls.iteritems():
-    #     print (key, value)
     for i in list_of_calls:
         for call1 in list_of_calls[i]:
             for j in list_of_calls:
@@ -2357,7 +2348,6 @@ def detect_inheritance_disorder():
                                 or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
                             matches = re.compile(
                                 "Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
-                            # print(type(matches[0]))
                             if matches and not matches[0] in owner_storage_addresses:
                                 owner_storage_addresses.append(matches[0])
     if owner_storage_addresses:
@@ -2486,19 +2476,14 @@ def detect_uninitialised_structs():
 def detect_type_deduction_overflow():
     s = Solver()
     s.set("timeout", global_params.TIMEOUT)
-    # print(infeasible_blocks)
-    # print(list_of_multiplications)
     for index in list_of_calls:
         for call in list_of_calls[index]:
-            # pretty_printer = pprint.PrettyPrinter()
-            # pretty_printer.pprint(list_of_calls)
             # if Conditions:
             # transaction sender = the one who the money is transfered to (msg.sender.transfer())
             if "Is" in str(call["recipient"]) and call["input_size"] == 0 and not is_expr(call["value"]) and call["value"] > 0:
                 for mul_pc in list_of_multiplications:
                     if mul_pc < call["pc"]:
                         for var_pc in list_of_vars:
-                            print(var_pc)
                             if mul_pc == var_pc-3:
                                 if call["value"] in list_of_multiplications[mul_pc] \
                                         and call["value"] in list_of_vars[var_pc]:
@@ -2566,7 +2551,6 @@ def detect_skip_empty_string_literal():
 
 
 def detect_hidden_state_update():
-    # print(len(list_of_calls))
     for index in list_of_calls:
         for call in list_of_calls[index]:
             # if receiver = msg.sender , Cv = int or Cv = this.balance
@@ -2780,120 +2764,6 @@ def detect_straw_man_contract():
                                 if not heuristic in heuristics:
                                     heuristics.append(heuristic)
 
-########################################################
-#             H9: Map Key Encoding Trick               #
-########################################################
-
-
-def detect_map_key_encoding_trick():
-    # owner_storage_addresses : the adress of the variable that is used in the comparison with msg.sender
-    # Ia_store_(owner_storage_addresses)
-    owner_storage_addresses = []
-    for index in list_of_calls:
-        for call in list_of_calls[index]:
-            if call["input_size"] == 0 and is_expr(call["value"]):
-                for condition in call["path_condition"]:
-                    # check to see if there's a call whose path conditions contain a comparison between Is and a storage variable(Ia_store)
-                    # ==> If(Extract(159,0,Ia_store_0) == Extract(159, 0, Is)
-                    if is_expr(condition) and "==" in str(condition):
-                        separated_condition = remove_line_break_space(
-                            simplify(condition)).split("==")
-                        if (("Ia_store" in separated_condition[0] or "0" in separated_condition[0]) and "Is" in separated_condition[1]) \
-                                or (("Ia_store" in separated_condition[1] or "0" in separated_condition[1]) and "Is" in separated_condition[0]):
-                            # find the string here : Ia_store_"  HERE  ", which is the address for the storage location of the variable in the if statement of the path condition
-                            matches = re.compile(
-                                "Ia_store_([0-9]+)\)").findall(remove_line_break_space(condition))
-                            if matches and not matches[0] in owner_storage_addresses:
-                                owner_storage_addresses.append(matches[0])
-
-    for x in range(len(owner_storage_addresses)):
-        # checks to see if Ia_store_( addrr ), addrr is hex number(which means there was a string(key map) in the comparison)
-        if owner_storage_addresses and int(owner_storage_addresses[x], 16):
-            message_value_sstores = []
-            for sstore in list_of_sstores:
-                if "Iv" in str(sstore["value"]):
-                    if not sstore["variable"] in message_value_sstores:
-                        message_value_sstores.append(sstore["variable"])
-
-            # message_sender_sstores = msg.senders that are assigned to a variable and saved in the storage
-            message_sender_sstores = []
-            for sstore in list_of_sstores:
-                if str(sstore["address"]).isdigit():
-                    # checks to see if Is is stored in a variable (msg.sender is assigned to a variable)
-                    if "Is" in str(sstore["value"]):
-                        variables = []
-                        for condition in sstore["path_condition"]:
-                            if is_expr(condition):
-                                for var in get_vars(condition):
-                                    if not str(var) in variables:
-                                        variables.append(str(var))
-                            if "Iv" in str(condition) and "Ia_store" in str(condition):
-                                if not sstore in message_sender_sstores:
-                                    message_sender_sstores.append(sstore)
-                        # Check if variables are identical to constructor variables
-                        if set(variables) == set(['Iv', 'init_Is', 'init_Ia', 'Id_size', 'Id_1']):
-                            message_sender_sstores.append(sstore)
-                    if "Extract(159, 0, Id_" in str(sstore["value"]):
-                        for condition in sstore["path_condition"]:
-                            if is_expr(condition):
-                                for var in message_value_sstores:
-                                    if var in get_vars(condition):
-                                        message_sender_sstores.append(sstore)
-            for sstore in message_sender_sstores:
-                used = False
-                for sstore_2 in list_of_sstores:
-                    if str(sstore["address"]) in str(sstore_2["variable"]) and sstore_2["function_signature"] != sstore["function_signature"]:
-                        used = True
-                        break
-                for comparison in list_of_comparisons:
-                    if is_expr(comparison) and sstore["variable"] in get_vars(comparison):
-                        used = True
-                        break
-                for index in list_of_calls:
-                    for call in list_of_calls[index]:
-                        if sstore["function_signature"] == call["function_signature"]:
-                            used = True
-                            break
-                        if is_expr(call["recipient"]) and sstore["variable"] in get_vars(call["recipient"]):
-                            used = True
-                            break
-                    if used:
-                        break
-                for suicide in list_of_suicides:
-                    if sstore["function_signature"] == suicide["function_signature"]:
-                        used = True
-                        break
-                if not used:
-                    # Check that the message sender is not stored in owner location
-                    if not sstore["address"] in owner_storage_addresses:
-                        heuristic = {}
-                        heuristic["function_signature"] = sstore["function_signature"]
-                        heuristic["block"] = sstore["block"]
-                        heuristic["type"] = HeuristicTypes.MAP_KEY_ENCODING_TRICK
-                        heuristic["pc"] = sstore["pc"]
-                        if not heuristic in heuristics:
-                            heuristics.append(heuristic)
-
-########################################################
-#               H10: Inheritance Disorder               #
-########################################################
-
-
-def detect_my_tesst():
-    for index in list_of_calls:
-        # print("\tList of calls[%d] = %s" % (index, list_of_calls[index]))
-        for call in list_of_calls[index]:
-            # print(call)
-            if call["block"] in infeasible_blocks and is_expr(call["value"]) and ("balance_Ia + Iv" == str(call["value"]) or "Iv + balance_Ia" == str(call["value"])):
-                # print(call["function_signature"])
-                heuristic = {}
-                heuristic["function_signature"] = call["function_signature"]
-                heuristic["block"] = call["block"]
-                heuristic["type"] = HeuristicTypes.MY_TESST
-                heuristic["pc"] = call["pc"]
-                if not heuristic in heuristics:
-                    heuristics.append(heuristic)
-
 
 def detect_honeypots():
     if detect_cash_flow():
@@ -2948,17 +2818,6 @@ def detect_honeypots():
             log.info("\t Straw man contract: \t " +
                      str(math.ceil(elapsed_time))+" seconds")
             log.info("\t---------- End Time ----------")
-        detect_map_key_encoding_trick()
-        if global_params.DEBUG_MODE:
-            elapsed_time = time.time() - start_time
-            log.info("\t Map key encoding trick: \t " +
-                     str(math.ceil(elapsed_time))+" seconds")
-            log.info("\t---------- End Time ----------")
-        detect_my_tesst()
-        if global_params.DEBUG_MODE:
-            elapsed_time = time.time() - start_time
-            log.info("\t My tesst: \t "+str(math.ceil(elapsed_time))+" seconds")
-            log.info("\t---------- End Time ----------")
 
     money_flow_found = any(
         [HeuristicTypes.MONEY_FLOW in heuristic["type"] for heuristic in heuristics])
@@ -2978,10 +2837,6 @@ def detect_honeypots():
         [HeuristicTypes.HIDDEN_STATE_UPDATE in heuristic["type"] for heuristic in heuristics])
     straw_man_contract_found = any(
         [HeuristicTypes.STRAW_MAN_CONTRACT in heuristic["type"] for heuristic in heuristics])
-    map_key_encoding_trick_found = any(
-        [HeuristicTypes.MAP_KEY_ENCODING_TRICK in heuristic["type"] for heuristic in heuristics])
-    my_tesst_found = any(
-        [HeuristicTypes.MY_TESST in heuristic["type"] for heuristic in heuristics])
 
     if source_map:
         # Money flow
@@ -3069,27 +2924,7 @@ def detect_honeypots():
             results["straw_man_contract"] = s
         s = "\t Straw man contract: \t "+str(straw_man_contract_found) + s
         log.info(s)
-        # Map key encoding
-        pcs = [heuristic["pc"]
-               for heuristic in heuristics if HeuristicTypes.MAP_KEY_ENCODING_TRICK in heuristic["type"]]
-        pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
-        pcs = source_map.reduce_same_position_pcs(pcs)
-        s = source_map.to_str(pcs, "Map key encoding trick")
-        if s:
-            results["map_key_encoding_trick"] = s
-        s = "\t Map key encoding trick: \t " + \
-            str(map_key_encoding_trick_found) + s
-        log.info(s)
-        # My Tesst
-        pcs = [heuristic["pc"]
-               for heuristic in heuristics if HeuristicTypes.MY_TESST in heuristic["type"]]
-        pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
-        pcs = source_map.reduce_same_position_pcs(pcs)
-        s = source_map.to_str(pcs, "My tesst")
-        if s:
-            results["my_tesst"] = s
-        s = "\t My tesst: \t "+str(my_tesst_found) + s
-        log.info(s)
+
     else:
         # Money flow
         results["money_flow"] = money_flow_found
@@ -3126,15 +2961,6 @@ def detect_honeypots():
         # Straw man contract
         results["straw_man_contract"] = straw_man_contract_found
         s = "\t Straw man contract: \t "+str(straw_man_contract_found)
-        log.info(s)
-        # Map key encoding trick
-        results["map_key_encoding_trick_found"] = map_key_encoding_trick_found
-        s = "\t Map_key_encoding_trick_found: \t " + \
-            str(map_key_encoding_trick_found)
-        log.info(s)
-        # My tesst
-        results["my_tesst"] = my_tesst_found
-        s = "\t My tesst: \t "+str(my_tesst_found)
         log.info(s)
 
 
@@ -3177,14 +3003,10 @@ def detect_bugs():
         log.info("\t Skip empty string: \t False")
         log.info("\t Hidden state update: \t False")
         log.info("\t Straw man contract: \t False")
-        log.info("\t Map key encoding trick: \t False")
-        log.info("\t My tesst: \t False")
         log.info("\t  --- 0.0 seconds ---")
         results["evm_code_coverage"] = "0.0"
         results["execution_paths"] = str(total_no_of_paths)
         results["timeout"] = g_timeout
-
-    # ??????????????????????
     if len(heuristics) > 0:
         for heuristic in heuristics:
             if heuristic["function_signature"]:
@@ -3205,7 +3027,6 @@ def detect_bugs():
                         method = ""
                     if not method in results["cashout_methods"]:
                         results["cashout_methods"].append(method)
-    # ???????????????????????
 
 
 def closing_message():
@@ -3249,8 +3070,6 @@ def handler(signum, frame):
     g_timeout = True
     raise Exception("timeout")
 
-
-# CONSS
 def analyze_constructor_variables(contract, contract_sol, _source_map=None):
     global c_name
     global c_name_sol
@@ -3288,11 +3107,12 @@ def analyze_constructor_variables(contract, contract_sol, _source_map=None):
         signal.alarm(0)
 
     log_file.close()
+    if not "sstore" in constructor_variables:
+        constructor_variables["sstore"] = []
     for sstore in list_of_sstores:
-        if not "sstore" in constructor_variables:
-            constructor_variables["sstore"] = []
         if sstore not in constructor_variables["sstore"]:
             constructor_variables["sstore"].append(sstore)
+
 
 
 def main(contract, contract_sol, _source_map=None):
@@ -3333,8 +3153,7 @@ def main(contract, contract_sol, _source_map=None):
     log.info("\t============ Results ===========")
 
     detect_bugs()
-    # for sstore in list_of_sstores:
-    #     print(sstore["variable"],sstore["value"])
+
     closing_message()
 
 
