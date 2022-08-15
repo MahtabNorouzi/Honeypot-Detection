@@ -12,11 +12,15 @@ import symExec
 import global_params
 import z3
 import z3.z3util
-
+import os, glob
+import requests
 from source_map import SourceMap
 from utils import run_command
 from HTMLParser import HTMLParser
 
+
+global api_key
+api_key = 'YQJDMZ7TZXTYPD6NCWUH6R2AEQBEXEETQA'
 
 # TODO Add checks for solc 0.4.25 and z3 4.7.1
 
@@ -89,10 +93,18 @@ def evm_cmp_version():
 
     return True
 
-
 def removeSwarmHash(evm):
     evm_without_hash = re.sub(r"a165627a7a72305820\S{64}0029$", "", evm)
     return evm_without_hash
+
+def get_the_first_transaction_data(address):
+    url = 'https://api.etherscan.io/api?module=account&action=txlist&address=' + address + '&tag=first&apikey=' + api_key
+    # print(url)
+    first_tx = requests.get(url)
+    if first_tx:
+        results = first_tx.json()
+        init_bytecode = results["result"]
+    return init_bytecode[0]
 
 
 def extract_bin_str(s):
@@ -116,17 +128,17 @@ def extract_bin_str_full(s):
         print "======= error ======="
         print "Solidity compilation failed"
         exit()
+    # print("contractss", contracts)
     return contracts
 
 
 def compileContracts(contract):
     cmd = "solc --bin-runtime %s" % contract
     out = run_command(cmd)
-    # print(out)
     libs = re.findall(r"_+(.*?)_+", out)
     libs = set(libs)
     if libs:
-        return link_libraries(contract, libs, extract_bin_str)
+        return link_full_libraries(contract, libs, extract_bin_str)
     else:
         return extract_bin_str(out)
 
@@ -136,9 +148,11 @@ def compileContractsFullBytecode(contract):
     out = run_command(cmd)
     libs = re.findall(r"_+(.*?)_+", out)
     libs = set(libs)
+    # print(libs)
     if libs:
-        return link_libraries(contract, libs, extract_bin_str_full)
+        return link_full_libraries(contract, libs, extract_bin_str_full)
     else:
+        # print("no lib")
         return extract_bin_str_full(out)
 
 
@@ -149,6 +163,23 @@ def link_libraries(filename, libs, extract_bin_str_fn):
         option += " --libraries %s:%s" % (lib, lib_address)
     FNULL = open(os.devnull, 'w')
     cmd = "solc --bin-runtime %s" % filename
+    p1 = subprocess.Popen(shlex.split(
+        cmd), stdout=subprocess.PIPE, stderr=FNULL)
+    cmd = "solc --link%s" % option
+    p2 = subprocess.Popen(shlex.split(cmd), stdin=p1.stdout,
+                          stdout=subprocess.PIPE, stderr=FNULL)
+    p1.stdout.close()
+    out = p2.communicate()[0]
+    print("outt", out)
+    return extract_bin_str_fn(out)
+
+def link_full_libraries(filename, libs, extract_bin_str_fn):
+    option = ""
+    for idx, lib in enumerate(libs):
+        lib_address = "0x" + hex(idx+1)[2:].zfill(40)
+        option += " --libraries %s:%s" % (lib, lib_address)
+    FNULL = open(os.devnull, 'w')
+    cmd = "solc --bin %s" % filename
     p1 = subprocess.Popen(shlex.split(
         cmd), stdout=subprocess.PIPE, stderr=FNULL)
     cmd = "solc --link%s" % option
@@ -178,9 +209,11 @@ def analyze_constructor(processed_evm_file, disasm_file, source_map=None):
         symExec.analyze_constructor_variables(disasm_file, args.source)
 
 
+# disassembles the code (bytecode ===> assembly code)
+# bytecode = processed_evm_file
+# assembly = disasm_file
 def analyze_runtime(processed_evm_file, disasm_file, source_map=None):
     disasm_out = ""
-    # disassembles the code (machine language ===> assembly code)
     try:
         disasm_p = subprocess.Popen(
             ["evm", "disasm", processed_evm_file], stdout=subprocess.PIPE)
@@ -218,7 +251,6 @@ def split_bytecode(bin_str):
         runtime_bytecode = bin_str
         constructor_bytecode = ""
         ifContract = False
-
     return ifContract, constructor_bytecode, runtime_bytecode
 
 
@@ -250,11 +282,14 @@ def main():
 
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-s", "--source", type=str,
+    group.add_argument("-si", "--sourceInit", type=str,
                        help="local source file name. Solidity by default. Use -b to process evm instead. Use stdin to read from stdin.")
     group.add_argument("-ru", "--remoteURL", type=str,
                        help="Get contract from remote URL. Solidity by default. Use -b to process evm instead.", dest="remote_URL")
-
+    group.add_argument("-s", "--source", type=str,
+                       help="local source file name. Solidity by default. Use -b to process evm instead. Use stdin to read from stdin.")
+    group.add_argument("-adr", "--address", type=str,
+                       help="search for the address in etherscan. Could be solidity file/ evm file.")
     parser.add_argument("--version", action="version",
                         version="HoneyBadger version 0.0.1 (Oyente version 0.2.7 - Commonwealth)")
     parser.add_argument(
@@ -280,6 +315,10 @@ def main():
         "--debug", help="Display debug information.", action="store_true")
     parser.add_argument(
         "-c", "--cfg", help="Create control flow graph and store as .dot file.", action="store_true")
+
+    group.add_argument(
+        "-a", "--all", type=str, help="Run honeybadger for all of the contracts in the dataset")
+
 
     args = parser.parse_args()
 
@@ -329,6 +368,7 @@ def main():
 
     # If we are given bytecode, disassemble first, as we need to operate on EVM ASM.
     if args.bytecode:
+        # print(args.source)
         processed_evm_file = args.source + '.evm'
         disasm_file = args.source + '.evm.disasm'
         with open(args.source) as f:
@@ -342,60 +382,61 @@ def main():
         remove_temporary_file(disasm_file)
         remove_temporary_file(processed_evm_file)
         remove_temporary_file(disasm_file + '.log')
-    # elif args.source:
-    #     # Compile contracts using solc
-    #     contracts = compileContracts(args.source)
 
-    #     # print(x)
-    #     # Analyze each contract
-    #     # bin_str: bytecode
-    #     # cname: ../honeypots/MultiplicatorX3.sol:MultiplicatorX3
-    #     for cname, bin_str in contracts:
-    #         print("")
-    #         logging.info("Contract %s:", cname)
-    #         # processed_evm_file = ../honeypots/MultiplicatorX3.sol:MultiplicatorX3.evm
-    #         processed_evm_file = cname + '.evm'
-    #         # disasm_file = ../honeypots/MultiplicatorX3.sol:MultiplicatorX3.evm.disasm
-    #         disasm_file = cname + '.evm.disasm'
-
-    #         with open(processed_evm_file, 'w') as of:
-    #             of.write(removeSwarmHash(bin_str))
-    #         # args.source = ../honeypots/MultiplicatorX3.sol
-    #         analyze(processed_evm_file, disasm_file, SourceMap(cname, args.source))
-    #         remove_temporary_file(processed_evm_file)
-    #         remove_temporary_file(disasm_file)
-    #         remove_temporary_file(disasm_file + '.log')
-
-    #     if global_params.STORE_RESULT:
-    #         if ':' in cname:
-    #             result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[0].replace('.sol', '.json').split('/')[-1])
-    #             with open(result_file, 'a') as of:
-    #                 of.write("}")
 
     elif args.source:
         # Compile contracts using solc
-        contracts = compileContractsFullBytecode(args.source)
+        contracts = compileContracts(args.source)
+
+        # print(x)
+        # Analyze each contract
+        # bin_str: bytecode
+        # cname: ../honeypots/MultiplicatorX3.sol:MultiplicatorX3
         for cname, bin_str in contracts:
-            ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(
-                bin_str)
-            # print(ifConstructor)
-            print("")
             logging.info("Contract %s:", cname)
             # processed_evm_file = ../honeypots/MultiplicatorX3.sol:MultiplicatorX3.evm
             processed_evm_file = cname + '.evm'
             # disasm_file = ../honeypots/MultiplicatorX3.sol:MultiplicatorX3.evm.disasm
             disasm_file = cname + '.evm.disasm'
 
-            if ifContract:
-                with open(processed_evm_file, 'w') as of:
-                    of.write(removeSwarmHash(constructor_bytecode))
+            with open(processed_evm_file, 'w') as of:
+                of.write(removeSwarmHash(bin_str))
+            # args.source = ../honeypots/MultiplicatorX3.sol
+            analyze_runtime(processed_evm_file, disasm_file, SourceMap(cname, args.source))
+            remove_temporary_file(processed_evm_file)
+            remove_temporary_file(disasm_file)
+            remove_temporary_file(disasm_file + '.log')
 
-                # args.source = ../honeypots/MultiplicatorX3.sol
-                print("Analysing constructor...")
-                analyze_constructor(processed_evm_file, disasm_file)
-                remove_temporary_file(processed_evm_file)
-                remove_temporary_file(disasm_file)
-                remove_temporary_file(disasm_file + '.log')
+        if global_params.STORE_RESULT:
+            if ':' in cname:
+                result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[0].replace('.sol', '.json').split('/')[-1])
+                with open(result_file, 'a') as of:
+                    of.write("}")
+
+    elif args.sourceInit:
+        # Compile contracts using solc
+        # Generates both creation bytecode and runtime bytecode
+        contracts = compileContractsFullBytecode(args.sourceInit)
+        for cname, bin_str in contracts:
+            ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(
+                bin_str)
+            logging.info("Contract %s:", cname)
+            processed_evm_file = cname + '.evm'
+            disasm_file = cname + '.evm.disasm'
+
+            if not ifContract:
+                # print("No contract found!")
+                continue
+
+            with open(processed_evm_file, 'w') as of:
+                of.write(removeSwarmHash(constructor_bytecode))
+
+            # args.source = ../honeypots/MultiplicatorX3.sol
+            print("Analysing constructor...")
+            analyze_constructor(processed_evm_file, disasm_file)
+            remove_temporary_file(processed_evm_file)
+            remove_temporary_file(disasm_file)
+            remove_temporary_file(disasm_file + '.log')
 
             with open(processed_evm_file, 'w') as of:
                 of.write(removeSwarmHash(runtime_bytecode))
@@ -410,9 +451,94 @@ def main():
         if global_params.STORE_RESULT:
             if ':' in cname:
                 result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[
-                                           0].replace('.sol', '.json').split('/')[-1])
+                                        0].replace('.sol', '.json').split('/')[-1])
                 with open(result_file, 'a') as of:
                     of.write("}")
+
+# The first transaction of a contract has the constructor bytecode + runtime bytecode
+# TODO : There may be more than one contract in a file! Handle it.
+    elif args.address:
+        first_tx_info = get_the_first_transaction_data(args.address)
+        creation_code = first_tx_info["input"]
+        args.source = 'unknown'
+
+        ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(creation_code[2:])
+        if not ifContract:
+            print("No contract found!")
+        processed_evm_file = args.source + '.evm'
+        disasm_file = args.source + '.evm.disasm'
+        with open(processed_evm_file, 'w') as f:
+            f.write(removeSwarmHash(constructor_bytecode))
+
+        print("Analysing constructor...")
+        analyze_constructor(processed_evm_file, disasm_file)
+        remove_temporary_file(processed_evm_file)
+        remove_temporary_file(disasm_file)
+        remove_temporary_file(disasm_file + '.log')
+
+
+        with open(processed_evm_file, 'w') as f:
+            f.write(removeSwarmHash(runtime_bytecode))
+
+        print("Analysing runtime...")
+        analyze_runtime(processed_evm_file, disasm_file)
+
+        remove_temporary_file(disasm_file)
+        remove_temporary_file(processed_evm_file)
+        remove_temporary_file(disasm_file + '.log')
+        if global_params.STORE_RESULT:
+            if ':' in cname:
+                result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[
+                                        0].replace('.sol', '.json').split('/')[-1])
+                with open(result_file, 'a') as of:
+                    of.write("}")
+
+    elif args.all:
+        path = args.all
+        dir_list = os.listdir(path)
+        for file in dir_list:
+            if file.endswith(".sol"):
+                print(path+file)
+                contracts = compileContractsFullBytecode(path+file)
+                for cname, bin_str in contracts:
+                    ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(
+                        bin_str)
+                    print("")
+                    logging.info("Contract %s:", cname)
+                    processed_evm_file = cname + '.evm'
+                    disasm_file = cname + '.evm.disasm'
+
+                    if not ifContract:
+                        print("No contract found!")
+                        continue
+        
+                    with open(processed_evm_file, 'w') as of:
+                        of.write(removeSwarmHash(constructor_bytecode))
+
+                    # args.source = ../honeypots/MultiplicatorX3.sol
+                    print("Analysing constructor...")
+                    analyze_constructor(processed_evm_file, disasm_file)
+                    remove_temporary_file(processed_evm_file)
+                    remove_temporary_file(disasm_file)
+                    remove_temporary_file(disasm_file + '.log')
+
+                    with open(processed_evm_file, 'w') as of:
+                        of.write(removeSwarmHash(runtime_bytecode))
+
+                    # args.source = ../honeypots/MultiplicatorX3.sol
+                    print("Analysing runtime...")
+                    analyze_runtime(processed_evm_file, disasm_file)
+                    remove_temporary_file(processed_evm_file)
+                    remove_temporary_file(disasm_file)
+                    remove_temporary_file(disasm_file + '.log')
+
+                if global_params.STORE_RESULT:
+                    if ':' in cname:
+                        result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[
+                                                0].replace('.sol', '.json').split('/')[-1])
+                        with open(result_file, 'a') as of:
+                            of.write("}")
+
 
 
 if __name__ == '__main__':
