@@ -204,9 +204,9 @@ def analyze_constructor(processed_evm_file, disasm_file, source_map=None):
         of.write(disasm_out)
     if source_map is not None:
         symExec.analyze_constructor_variables(
-            disasm_file, args.source, source_map)
+            disasm_file, args.sourceInit, source_map)
     else:
-        symExec.analyze_constructor_variables(disasm_file, args.source)
+        symExec.analyze_constructor_variables(disasm_file, args.sourceInit)
 
 
 # disassembles the code (bytecode ===> assembly code)
