@@ -24,8 +24,10 @@ from basicblock import BasicBlock
 from analysis import *
 pretty_printer = pprint.PrettyPrinter()
 
-log = logging.getLogger(__name__)
 
+# logging.basicConfig(filename="newfile.log",level=logging.INFO,filemode='w')
+
+log = logging.getLogger(__name__)
 UNSIGNED_BOUND_NUMBER = 2**256 - 1
 CONSTANT_ONES_159 = BitVecVal((1 << 160) - 1, 256)
 
@@ -2857,6 +2859,7 @@ def closing_message():
     log.info("\t====== Analysis Completed ======")
     if global_params.STORE_RESULT:
         result_file = os.path.join(global_params.RESULTS_DIR, c_name+'.json'.split('/')[-1])
+        print(result_file)
         if '.sol' in c_name:
             result_file = os.path.join(global_params.RESULTS_DIR, c_name.split(':')[0].replace('.sol', '.json').split('/')[-1])
         elif '.bin.evm.disasm' in c_name:
@@ -2930,7 +2933,7 @@ def analyze_constructor_variables(contract, contract_sol, _source_map=None):
 
 
 def main(contract, contract_sol, _source_map=None):
-    pretty_printer.pprint(constructor_variables)
+    # pretty_printer.pprint(constructor_variables)
     global c_name
     global c_name_sol
     global source_map

@@ -1,0 +1,22 @@
+{"EXPERIMENTAL_ETH_AUCTION":{
+ "execution_paths": "27", 
+ "money_flow": true, 
+ "hidden_state_update": false, 
+ "balance_disorder": false, 
+ "execution_time": "5.26472496986", 
+ "hidden_transfer": false, 
+ "attack_methods": [], 
+ "cashout_methods": [], 
+ "evm_code_coverage": "99.5", 
+ "straw_man_contract": false, 
+ "skip_empty_string_literal": false, 
+ "inheritance_disorder": false, 
+ "uninitialised_struct": false, 
+ "timeout": false, 
+ "dead_code": [
+  "JUMPDEST ", 
+  "STOP ", 
+  "STOP "
+ ], 
+ "type_deduction_overflow": false
+}}

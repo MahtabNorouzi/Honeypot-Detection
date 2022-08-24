@@ -1,0 +1,25 @@
+{"PinCodeEtherStorage":{
+ "execution_paths": "22", 
+ "money_flow": true, 
+ "hidden_state_update": false, 
+ "balance_disorder": true, 
+ "execution_time": "1.00983095169", 
+ "hidden_transfer": false, 
+ "attack_methods": [
+  "0xb4e1e06e"
+ ], 
+ "cashout_methods": [
+  "0xb4e1e06e", 
+  "0x57ea89b6"
+ ], 
+ "evm_code_coverage": "99.6", 
+ "straw_man_contract": false, 
+ "skip_empty_string_literal": false, 
+ "inheritance_disorder": false, 
+ "uninitialised_struct": false, 
+ "timeout": false, 
+ "dead_code": [
+  "STOP "
+ ], 
+ "type_deduction_overflow": false
+}}

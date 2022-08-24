@@ -1,0 +1,24 @@
+{"BankOfStephen":{
+ "execution_paths": "8", 
+ "money_flow": true, 
+ "hidden_state_update": false, 
+ "balance_disorder": false, 
+ "execution_time": "1.12092995644", 
+ "hidden_transfer": false, 
+ "attack_methods": [
+  "0xf9dca989"
+ ], 
+ "cashout_methods": [
+  "0x3ccfd60b"
+ ], 
+ "evm_code_coverage": "99.5", 
+ "straw_man_contract": false, 
+ "skip_empty_string_literal": false, 
+ "inheritance_disorder": true, 
+ "uninitialised_struct": false, 
+ "timeout": false, 
+ "dead_code": [
+  "STOP "
+ ], 
+ "type_deduction_overflow": false
+}}

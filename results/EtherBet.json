@@ -1,0 +1,26 @@
+{"EtherBet":{
+ "execution_paths": "58", 
+ "money_flow": true, 
+ "hidden_state_update": true, 
+ "balance_disorder": false, 
+ "execution_time": "13.0655050278", 
+ "hidden_transfer": false, 
+ "attack_methods": [
+  "0xf83d08ba"
+ ], 
+ "cashout_methods": [
+  "0x11610c25", 
+  "", 
+  "0x4d68282f"
+ ], 
+ "evm_code_coverage": "99.8", 
+ "straw_man_contract": false, 
+ "skip_empty_string_literal": false, 
+ "inheritance_disorder": false, 
+ "uninitialised_struct": false, 
+ "timeout": false, 
+ "dead_code": [
+  "STOP "
+ ], 
+ "type_deduction_overflow": false
+}}
