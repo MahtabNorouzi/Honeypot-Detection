@@ -26,3 +26,12 @@ class EthereumData:
 		html = r.text
 		code = re.findall("<div id='verifiedbytecode2'>(\w*)<\/div>", html)[0]
 		return code
+
+	def get_the_first_transaction_data(self, address):
+		url = 'https://api.etherscan.io/api?module=account&action=txlist&address=' + address + '&tag=first&apikey=' + self.apikey
+		# print(url)
+		first_tx = requests.get(url)
+		if first_tx:
+			results = first_tx.json()
+			init_bytecode = results["result"]
+		return init_bytecode[0]

@@ -8,6 +8,7 @@ import re
 import argparse
 import logging
 import requests
+from ethereum_data_etherscan import EthereumData
 import symExec
 import global_params
 import z3
@@ -21,6 +22,9 @@ from HTMLParser import HTMLParser
 
 global api_key
 api_key = 'YQJDMZ7TZXTYPD6NCWUH6R2AEQBEXEETQA'
+
+global etherscan_api
+etherscan_api = EthereumData()
 
 # TODO Add checks for solc 0.4.25 and z3 4.7.1
 
@@ -96,15 +100,6 @@ def evm_cmp_version():
 def removeSwarmHash(evm):
     evm_without_hash = re.sub(r"a165627a7a72305820\S{64}0029$", "", evm)
     return evm_without_hash
-
-def get_the_first_transaction_data(address):
-    url = 'https://api.etherscan.io/api?module=account&action=txlist&address=' + address + '&tag=first&apikey=' + api_key
-    # print(url)
-    first_tx = requests.get(url)
-    if first_tx:
-        results = first_tx.json()
-        init_bytecode = results["result"]
-    return init_bytecode[0]
 
 
 def extract_bin_str(s):
@@ -388,7 +383,6 @@ def main():
         # Compile contracts using solc
         contracts = compileContracts(args.source)
 
-        # print(x)
         # Analyze each contract
         # bin_str: bytecode
         # cname: ../honeypots/MultiplicatorX3.sol:MultiplicatorX3
@@ -458,7 +452,7 @@ def main():
 # The first transaction of a contract has the constructor bytecode + runtime bytecode
 # TODO : There may be more than one contract in a file! Handle it.
     elif args.address:
-        first_tx_info = get_the_first_transaction_data(args.address)
+        first_tx_info = etherscan_api.get_the_first_transaction_data(args.address)
         creation_code = first_tx_info["input"]
         args.source = 'unknown'
 
