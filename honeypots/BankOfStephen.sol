@@ -1,4 +1,4 @@
-pragma solidity ^0.3.24;
+pragma solidity ^0.4.24;
 
 contract BankOfStephen {
     mapping(bytes32 => address) private owner;
