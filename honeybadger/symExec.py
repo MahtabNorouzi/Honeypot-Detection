@@ -149,9 +149,6 @@ def initGlobalVars():
     heuristics = []
 
 
-
-
-
     # capturing the last statement of each basic block
     global end_ins_dict
     end_ins_dict = {}
@@ -889,6 +886,9 @@ def sym_exec_ins(params):
     log.debug("==============================")
     log.debug("EXECUTING: " + instr)
 
+
+    # TODO: INVALID
+
     #
     #  0s: Stop and Arithmetic Operations
     #
@@ -1384,12 +1384,50 @@ def sym_exec_ins(params):
             stack.insert(0, computed)
         else:
             raise ValueError('STACK underflow')
+
+    # TODO: SELFBALANCE, EXTCODEHASH, CHAINID, BASEFEE, CREATE2
+
+    elif instr_parts[0] == "SHL":
+        if len(stack) >= 2:
+            global_state["pc"] = global_state["pc"] + 1
+            first = stack.pop(0)
+            second = stack.pop(0)
+            computed = second << first
+            computed = simplify(computed) if is_expr(computed) else computed
+            stack.insert(0, computed)
+        else:
+            raise ValueError('STACK underflow')
+
+    elif instr_parts[0] == "SHR":
+        if len(stack) >= 2:
+            global_state["pc"] = global_state["pc"] + 1
+            first = stack.pop(0)
+            second = stack.pop(0)
+            if isAllReal(first, second):
+                computed = (second % (1 << 256)) >> first
+            else:
+                computed = LShR(second, first)
+            computed = simplify(computed) if is_expr(computed) else computed
+            stack.insert(0, computed)
+        else:
+            raise ValueError('STACK underflow')
+    elif instr_parts[0] == "SAR":
+        if len(stack) > 1:
+            global_state["pc"] = global_state["pc"] + 1
+            first = stack.pop(0)
+            second = stack.pop(0)
+
+            computed = second >> first
+            computed = simplify(computed) if is_expr(computed) else computed
+            stack.insert(0, computed)
+        else:
+            raise ValueError('STACK underflow')
     #
     # 20s: SHA3
     #
     elif instr_parts[0] == "SHA3":
         if len(stack) > 1:
-            global_state["pc"] = global_state["pc"] + 1
+            2
             s0 = stack.pop(0)
             s1 = stack.pop(0)
             if isAllReal(s0, s1):
@@ -1585,6 +1623,20 @@ def sym_exec_ins(params):
             global_state["miu_i"] = current_miu_i
         else:
             raise ValueError('STACK underflow')
+    elif instr_parts[0] == "EXTCODEHASH":
+        if len(stack) >= 1:
+            global_state["pc"] = global_state["pc"] + 1
+            stack.pop(0)
+            new_var_name = "IH_codehash"
+            if new_var_name in path_conditions_and_vars:
+                new_var = path_conditions_and_vars[new_var_name]
+            else:
+                new_var = BitVec(new_var_name, 256)
+                path_conditions_and_vars[new_var_name] = new_var
+            stack.insert(0, new_var)
+        else:
+            raise ValueError('STACK underflow')
+
     elif instr_parts[0] == "GASPRICE":
         global_state["pc"] = global_state["pc"] + 1
         stack.insert(0, global_state["gas_price"])
@@ -1615,7 +1667,7 @@ def sym_exec_ins(params):
             no_bytes = stack.pop(0)
             current_miu_i = global_state["miu_i"]
 
-            if isAllReal(address, mem_location, current_miu_i, code_from, no_bytes) and USE_GLOBAL_BLOCKCHAIN:
+            if isAllReal(address, mem_location, current_miu_i, code_from, no_bytes) and global_params.USE_GLOBAL_BLOCKCHAIN:
                 temp = long(math.ceil((mem_location + no_bytes) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
@@ -2086,6 +2138,18 @@ def sym_exec_ins(params):
                 analysis["time_dependency_bug"][last_idx]
         else:
             raise ValueError('STACK underflow')
+    elif instr_parts[0] == "CREATE2":
+        if len(stack) >= 4:
+            global_state["pc"] += 1
+            stack.pop(0)
+            stack.pop(0)
+            stack.pop(0)
+            stack.pop(0)
+            new_var_name = gen.gen_arbitrary_var()
+            new_var = BitVec(new_var_name, 256)
+            stack.insert(0, new_var)
+        else:
+            raise ValueError('STACK underflow')
     elif instr_parts[0] == "DELEGATECALL" or instr_parts[0] == "STATICCALL":
         if len(stack) > 5:
             global_state["pc"] += 1
@@ -2166,6 +2230,11 @@ def sym_exec_ins(params):
         print_state(stack, mem, global_state)
     except:
         log.debug("Error: Debugging states")
+
+
+# TODO: Detect if a money flow depends on the timestamp
+# TODO: detect if two paths send money to different people
+
 
 ########################################################
 #                      Heuristics                      #

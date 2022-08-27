@@ -62,6 +62,12 @@ def has_dependencies_installed():
         logging.critical(
             "solc is missing. Please install the solidity compiler and make sure solc is in the path.")
         return False
+    else:
+        cmd = "solc --version"
+        out = run_command(cmd).strip()
+        version = re.findall(r"Version: (\d*.\d*.\d*)", out)[0]
+        if version != '0.4.17':
+            logging.warning("You are using solc version %s, The latest supported version is 0.4.17" % version)
 
     return True
 
@@ -127,6 +133,18 @@ def extract_bin_str_full(s):
     return contracts
 
 
+# def _without_metadata(bytecode):
+#     print("byte code", bytecode)
+#     end = None
+#     if (
+#         bytecode[-43:-34] == b"\xa1\x65\x62\x7a\x7a\x72\x30\x58\x20"
+#         and bytecode[-2:] == b"\x00\x29"
+#     ):
+#         end = -9 - 32 - 2  # Size of metadata at the end of most contracts
+#     print("without metadata", bytecode[:end])
+#     return bytecode[:end]
+
+
 def compileContracts(contract):
     cmd = "solc --bin-runtime %s" % contract
     out = run_command(cmd)
@@ -143,11 +161,9 @@ def compileContractsFullBytecode(contract):
     out = run_command(cmd)
     libs = re.findall(r"_+(.*?)_+", out)
     libs = set(libs)
-    # print(libs)
     if libs:
         return link_full_libraries(contract, libs, extract_bin_str_full)
     else:
-        # print("no lib")
         return extract_bin_str_full(out)
 
 
@@ -165,7 +181,6 @@ def link_libraries(filename, libs, extract_bin_str_fn):
                           stdout=subprocess.PIPE, stderr=FNULL)
     p1.stdout.close()
     out = p2.communicate()[0]
-    print("outt", out)
     return extract_bin_str_fn(out)
 
 def link_full_libraries(filename, libs, extract_bin_str_fn):
@@ -233,16 +248,35 @@ def remove_temporary_file(path):
 
 
 def split_bytecode(bin_str):
-    # CODECOPY: 39
-    # PUSH1 0X00: 6000
-    # RETURN: f3
-    # STOP: 00
+
+    """
+    Compiler version 0.4.*
+    CODECOPY: 39
+    PUSH1 0X00: 6000
+    RETURN: f3
+    STOP: 00
+    ------------------------------------------
+    Compiler version 0.5.* - version 0.6.* - version 0.7.* - version 0.8.*
+    CODECOPY: 39
+    PUSH1 0X00: 6000
+    RETURN: f3
+    INVALID: fe    
+    """
+
     if "396000f300" in bin_str:
+        print("compiler version 0.4.*")
         split_bytecode = re.split(r'(\s*396000f300\s*)', bin_str)
         constructor_bytecode = split_bytecode[0] + split_bytecode[1]
         runtime_bytecode = split_bytecode[2]
         ifContract = True
+    elif "396000f3fe" in bin_str:
+        print("compiler version >=0.4")
+        split_bytecode = re.split(r'(\s*396000f3fe\s*)', bin_str)
+        constructor_bytecode = split_bytecode[0] + split_bytecode[1]
+        runtime_bytecode = split_bytecode[2]
+        ifContract = True
     else:
+        print("couldn't find the init bytecode")
         runtime_bytecode = bin_str
         constructor_bytecode = ""
         ifContract = False
@@ -455,7 +489,6 @@ def main():
         first_tx_info = etherscan_api.get_the_first_transaction_data(args.address)
         creation_code = first_tx_info["input"]
         args.source = 'unknown'
-
         ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(creation_code[2:])
         if not ifContract:
             print("No contract found!")

@@ -312,3 +312,49 @@ python honeybadger.py -s ../honeypots/EXPERIMENTAL_ETH_AUCTION.sol -c
 python honeybadger.py -s ../honeypots/EXPERIMENTAL_ETH_AUCTION.sol -c
 python honeybadger.py -s ../honeypots/EXPERIMENTAL_ETH_AUCTION.sol -c
 exit
+python honeybadger/honeybadger.py -si honeypots/solidityVersion5.sol 
+exit
+python honeybadger/honeybadger.py -adr 0xDDa0D3B2aCb07A93D25474c49C86621f6eB6F298
+python honeybadger/honeybadger.py -adr 0xDDa0D3B2aCb07A93D25474c49C86621f6eB6F298
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+pip install --upgrade pip
+pip install unidecode
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -si honeypots/Multiple3x.sol 
+python honeybadger/honeybadger.py -si honeypots/Multiple3x.sol 
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0x70C01853e4430cae353c9a7AE232a6a95f6CaFd9
+python honeybadger/honeybadger.py -adr 0xbAB5B27567dDBBC8F26017F9ed53fD65f731158d
+python honeybadger/honeybadger.py -adr 0xbAB5B27567dDBBC8F26017F9ed53fD65f731158d
+python honeybadger/honeybadger.py -adr 0xbAB5B27567dDBBC8F26017F9ed53fD65f731158d
+python honeybadger/honeybadger.py -adr 0xbAB5B27567dDBBC8F26017F9ed53fD65f731158d
+python honeybadger/honeybadger.py -si honeypots/solidityVersion5.sol 
+python honeybadger/honeybadger.py -si honeypots/solidityVersion5.sol 
+python honeybadger/honeybadger.py --version
+solc --version
+pip install solc-select
+pip3 install solc-select
+pip install solc-select
+python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
+python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
+python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
+solc --version
+pip install solc-select
+python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
+pip install crytic-compile
+pip install manticore
+manticore
