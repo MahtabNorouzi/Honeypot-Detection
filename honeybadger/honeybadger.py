@@ -18,6 +18,7 @@ import requests
 from source_map import SourceMap
 from utils import run_command
 from HTMLParser import HTMLParser
+import six
 
 
 global api_key
@@ -114,8 +115,7 @@ def extract_bin_str(s):
     contracts = [contract for contract in contracts if contract[1]]
     if not contracts:
         logging.critical("Solidity compilation failed")
-        print "======= error ======="
-        print "Solidity compilation failed"
+        six.print_({"error": "Solidity compilation failed"})
         exit()
     return contracts
 
@@ -126,8 +126,7 @@ def extract_bin_str_full(s):
     contracts = [contract for contract in contracts if contract[1]]
     if not contracts:
         logging.critical("Solidity compilation failed")
-        print "======= error ======="
-        print "Solidity compilation failed"
+        six.print_({"error": "Solidity compilation failed"})
         exit()
     # print("contractss", contracts)
     return contracts
@@ -196,7 +195,7 @@ def link_full_libraries(filename, libs, extract_bin_str_fn):
     p2 = subprocess.Popen(shlex.split(cmd), stdin=p1.stdout,
                           stdout=subprocess.PIPE, stderr=FNULL)
     p1.stdout.close()
-    out = p2.communicate()[0]
+    out = p2.communicate()[0].decode()
     return extract_bin_str_fn(out)
 
 
@@ -206,7 +205,7 @@ def analyze_constructor(processed_evm_file, disasm_file, source_map=None):
     try:
         disasm_p = subprocess.Popen(
             ["evm", "disasm", processed_evm_file], stdout=subprocess.PIPE)
-        disasm_out = disasm_p.communicate()[0]
+        disasm_out = disasm_p.communicate()[0].decode()
     except:
         logging.critical("Disassembly failed.")
         exit()

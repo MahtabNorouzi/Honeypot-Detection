@@ -16,6 +16,7 @@ import os.path
 import z3
 import binascii
 import global_params
+import six
 
 from collections import namedtuple
 from vargenerator import *
@@ -67,7 +68,7 @@ class Parameter:
             "is_feasible": True,
             "path_conditions_and_vars": {}
         }
-        for (attr, default) in attr_defaults.iteritems():
+        for (attr, default) in six.iteritems(attr_defaults):
             setattr(self, attr, kwargs.get(attr, default))
 
     def copy(self):
@@ -615,7 +616,7 @@ def sym_exec_block(params):
         #print("STACK: " + str(stack))
 
     current_edge = Edge(pre_block, block)
-    if visited_edges.has_key(current_edge):
+    if current_edge in visited_edges:
         updated_count_number = visited_edges[current_edge] + 1
         visited_edges.update({current_edge: updated_count_number})
     else:
@@ -701,12 +702,12 @@ def sym_exec_block(params):
 
         if global_params.DEBUG_MODE:
             if depth > global_params.DEPTH_LIMIT:
-                print "!!! DEPTH LIMIT EXCEEDED !!!"
+                six.print_("!!! DEPTH LIMIT EXCEEDED !!!")
 
         if global_params.DEBUG_MODE:
-            print "Termintating path: "+str(total_no_of_paths)
-            print "Depth: "+str(depth)
-            print ""
+            six.print_("Termintating path: "+str(total_no_of_paths))
+            six.print_("Depth: "+str(depth))
+            six.print_("")
 
         display_analysis(analysis)
 
@@ -1588,7 +1589,10 @@ def sym_exec_ins(params):
             current_miu_i = global_state["miu_i"]
 
             if isAllReal(mem_location, current_miu_i, code_from, no_bytes):
-                temp = long(math.ceil((mem_location + no_bytes) / float(32)))
+                if six.PY2:
+                    temp = long(math.ceil((mem_location + no_bytes) / float(32)))
+                else:
+                    temp = int(math.ceil((mem_location + no_bytes) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
 
@@ -1668,7 +1672,10 @@ def sym_exec_ins(params):
             current_miu_i = global_state["miu_i"]
 
             if isAllReal(address, mem_location, current_miu_i, code_from, no_bytes) and global_params.USE_GLOBAL_BLOCKCHAIN:
-                temp = long(math.ceil((mem_location + no_bytes) / float(32)))
+                if six.PY2:
+                    temp = long(math.ceil((mem_location + no_bytes) / float(32)))
+                else:
+                    temp = int(math.ceil((mem_location + no_bytes) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
 
@@ -1757,7 +1764,10 @@ def sym_exec_ins(params):
             address = stack.pop(0)
             current_miu_i = global_state["miu_i"]
             if isAllReal(address, current_miu_i) and address in mem:
-                temp = long(math.ceil((address + 32) / float(32)))
+                if six.PY2:
+                    temp = long(math.ceil((address + 32) / float(32)))
+                else:
+                    temp = int(math.ceil((address + 32) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
                 value = mem[address]
@@ -1806,7 +1816,10 @@ def sym_exec_ins(params):
                     memory[stored_address + i] = value % 256
                     value /= 256
             if isAllReal(stored_address, current_miu_i):
-                temp = long(math.ceil((stored_address + 32) / float(32)))
+                if six.PY2:
+                    temp = long(math.ceil((stored_address + 32) / float(32)))
+                else:
+                    temp = int(math.ceil((stored_address + 32) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
                 mem[stored_address] = stored_value  # note that the stored_value could be symbolic
@@ -1839,7 +1852,10 @@ def sym_exec_ins(params):
             stored_value = temp_value % 256  # get the least byte
             current_miu_i = global_state["miu_i"]
             if isAllReal(stored_address, current_miu_i):
-                temp = long(math.ceil((stored_address + 1) / float(32)))
+                if six.PY2:
+                    temp = long(math.ceil((stored_address + 1) / float(32)))
+                else:
+                    temp = int(math.ceil((stored_address + 1) / float(32)))
                 if temp > current_miu_i:
                     current_miu_i = temp
                 mem[stored_address] = stored_value  # note that the stored_value could be symbolic
@@ -2489,7 +2505,7 @@ def detect_skip_empty_string_literal():
         for call in list_of_calls[index]:
             if isReal(call["input_size"]) and call["input_size"] > 0 and is_expr(call["recipient"]) and any([True for var in get_vars(call["recipient"]) if str(var) == "Ia"]):
                 if call["input_offset"] in call["memory"]:
-                    function_signature = call["memory"][call["input_offset"]]/26959946667150639794667015087019630673637144422540572481103610249216L
+                    function_signature = call["memory"][call["input_offset"]]/long(26959946667150639794667015087019630673637144422540572481103610249216)
                     if function_signature in list_of_functions and len(list_of_functions[function_signature]) != call["input_size"]/32:
                         for index2 in list_of_calls:
                             for call2 in list_of_calls[index2]:
@@ -2866,8 +2882,8 @@ def detect_bugs():
     global visited_pcs
 
     if global_params.DEBUG_MODE:
-        print "Number of total paths: "+str(total_no_of_paths)
-        print ""
+        six.print_("Number of total paths: "+str(total_no_of_paths))
+        six.print_("")
 
     if instructions:
         evm_code_coverage = float(len(visited_pcs)) / len(instructions.keys()) * 100
@@ -2953,7 +2969,7 @@ def closing_message():
 def handler(signum, frame):
     global g_timeout
 
-    print "!!! SYMBOLIC EXECUTION TIMEOUT !!!"
+    six.print_("!!! SYMBOLIC EXECUTION TIMEOUT !!!")
     g_timeout = True
     raise Exception("timeout")
 
