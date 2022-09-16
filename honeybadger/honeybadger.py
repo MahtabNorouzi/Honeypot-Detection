@@ -63,12 +63,6 @@ def has_dependencies_installed():
         logging.critical(
             "solc is missing. Please install the solidity compiler and make sure solc is in the path.")
         return False
-    else:
-        cmd = "solc --version"
-        out = run_command(cmd).strip()
-        version = re.findall(r"Version: (\d*.\d*.\d*)", out)[0]
-        if version != '0.4.17':
-            logging.warning("You are using solc version %s, The latest supported version is 0.4.17" % version)
 
     return True
 
@@ -318,6 +312,8 @@ def main():
                        help="local source file name. Solidity by default. Use -b to process evm instead. Use stdin to read from stdin.")
     group.add_argument("-adr", "--address", type=str,
                        help="search for the address in etherscan. Could be solidity file/ evm file.")
+    group.add_argument("-ethscan", "--etherscan", nargs='+',type = int,
+                       help="search for the address in etherscan. Could be solidity file/ evm file.")
     parser.add_argument("--version", action="version",
                         version="HoneyBadger version 0.0.1 (Oyente version 0.2.7 - Commonwealth)")
     parser.add_argument(
@@ -445,6 +441,7 @@ def main():
         # Generates both creation bytecode and runtime bytecode
         contracts = compileContractsFullBytecode(args.sourceInit)
         for cname, bin_str in contracts:
+            print("cname",cname)
             ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(
                 bin_str)
             logging.info("Contract %s:", cname)
@@ -491,8 +488,8 @@ def main():
         ifContract, constructor_bytecode, runtime_bytecode = split_bytecode(creation_code[2:])
         if not ifContract:
             print("No contract found!")
-        processed_evm_file = args.source + '.evm'
-        disasm_file = args.source + '.evm.disasm'
+        processed_evm_file = args.address + '.evm'
+        disasm_file = args.address + '.evm.disasm'
         with open(processed_evm_file, 'w') as f:
             f.write(removeSwarmHash(constructor_bytecode))
 
@@ -512,12 +509,17 @@ def main():
         remove_temporary_file(disasm_file)
         remove_temporary_file(processed_evm_file)
         remove_temporary_file(disasm_file + '.log')
-        if global_params.STORE_RESULT:
-            if ':' in cname:
-                result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[
-                                        0].replace('.sol', '.json').split('/')[-1])
-                with open(result_file, 'a') as of:
-                    of.write("}")
+        # if global_params.STORE_RESULT:
+        #     if ':' in cname:
+        #         result_file = os.path.join(global_params.RESULTS_DIR, cname.split(':')[
+        #                                 0].replace('.sol', '.json').split('/')[-1])
+        #         with open(result_file, 'a') as of:
+        #             of.write("}")
+
+    # TODO: Move this function to another class it shouldn't be here
+    elif args.etherscan:
+        etherscan_api.getAllContracts(args.etherscan[0], args.etherscan[1])
+
 
     elif args.all:
         path = args.all

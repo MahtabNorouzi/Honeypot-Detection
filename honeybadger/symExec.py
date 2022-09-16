@@ -26,9 +26,9 @@ from analysis import *
 pretty_printer = pprint.PrettyPrinter()
 
 
-# logging.basicConfig(filename="newfile.log",level=logging.INFO,filemode='w')
+# logging.basicConfig(filename="results.log",level=logging.INFO,filemode='w')
 
-log = logging.getLogger(__name__)
+logg = logging.getLogger('results')
 UNSIGNED_BOUND_NUMBER = 2**256 - 1
 CONSTANT_ONES_159 = BitVecVal((1 << 160) - 1, 256)
 
@@ -281,7 +281,7 @@ def print_cfg():
                 f.write('"'+hex(block.get_start_address())+'" -> "UNKNOWN_TARGET" [color="black"];\n')
     f.write('}\n')
     f.close()
-    log.debug(str(edges))
+    logg.debug(str(edges))
 
 def mapping_push_instruction(current_line_content, current_ins_address, idx, positions, length):
     global source_map
@@ -360,7 +360,7 @@ def collect_vertices(tokens):
                     current_line_content += push_val + ' '
                     instructions[current_ins_address] = current_line_content
                     idx = mapping_push_instruction(current_line_content, current_ins_address, idx, positions, length) if source_map else None
-                    log.debug(current_line_content)
+                    logg.debug(current_line_content)
                     current_line_content = ""
                     wait_for_push = False
                     break
@@ -375,7 +375,7 @@ def collect_vertices(tokens):
             try:
                 current_ins_address = int(tok_string)
             except ValueError:
-                log.critical("ERROR when parsing row %d col %d", srow, scol)
+                logg.critical("ERROR when parsing row %d col %d", srow, scol)
                 quit()
             is_new_line = False
             if is_new_block:
@@ -384,7 +384,7 @@ def collect_vertices(tokens):
             continue
         elif tok_type == NEWLINE:
             is_new_line = True
-            log.debug(current_line_content)
+            logg.debug(current_line_content)
             instructions[current_ins_address] = current_line_content
             idx = mapping_non_push_instruction(current_line_content, current_ins_address, idx, positions, length) if source_map else None
             current_line_content = ""
@@ -413,8 +413,8 @@ def collect_vertices(tokens):
             current_line_content += tok_string + " "
 
     if current_block not in end_ins_dict:
-        log.debug("current block: %d", current_block)
-        log.debug("last line: %d", current_ins_address)
+        logg.debug("current block: %d", current_block)
+        logg.debug("last line: %d", current_ins_address)
         end_ins_dict[current_block] = current_ins_address
 
     if current_block not in jump_type:
@@ -608,7 +608,7 @@ def sym_exec_block(params):
 
     Edge = namedtuple("Edge", ["v1", "v2"]) # Factory Function for tuples is used as dictionary key
     if block < 0:
-        log.debug("UNKNOWN JUMP ADDRESS. TERMINATING THIS PATH")
+        logg.debug("UNKNOWN JUMP ADDRESS. TERMINATING THIS PATH")
         return ["ERROR"]
 
     if global_params.DEBUG_MODE:
@@ -884,8 +884,8 @@ def sym_exec_ins(params):
     # since SE will modify the stack and mem
     update_analysis(analysis, instr_parts[0], stack, mem, global_state, path_conditions_and_vars, solver)
 
-    log.debug("==============================")
-    log.debug("EXECUTING: " + instr)
+    logg.debug("==============================")
+    logg.debug("EXECUTING: " + instr)
 
 
     # TODO: INVALID
@@ -1772,8 +1772,8 @@ def sym_exec_ins(params):
                     current_miu_i = temp
                 value = mem[address]
                 stack.insert(0, value)
-                log.debug("temp: " + str(temp))
-                log.debug("current_miu_i: " + str(current_miu_i))
+                logg.debug("temp: " + str(temp))
+                logg.debug("current_miu_i: " + str(current_miu_i))
             else:
                 temp = ((address + 31) / 32) + 1
                 current_miu_i = to_symbolic(current_miu_i)
@@ -1794,8 +1794,8 @@ def sym_exec_ins(params):
                     new_var = path_conditions_and_vars[new_var_name]
                     stack.insert(0, new_var)
                     mem[address] = new_var
-                log.debug("temp: " + str(temp))
-                log.debug("current_miu_i: " + str(current_miu_i))
+                logg.debug("temp: " + str(temp))
+                logg.debug("current_miu_i: " + str(current_miu_i))
             global_state["miu_i"] = current_miu_i
         else:
             raise ValueError('STACK underflow')
@@ -1823,14 +1823,14 @@ def sym_exec_ins(params):
                 if temp > current_miu_i:
                     current_miu_i = temp
                 mem[stored_address] = stored_value  # note that the stored_value could be symbolic
-                log.debug("temp: " + str(temp))
-                log.debug("current_miu_i: " + str(current_miu_i))
+                logg.debug("temp: " + str(temp))
+                logg.debug("current_miu_i: " + str(current_miu_i))
             else:
-                log.debug("temp: " + str(stored_address))
+                logg.debug("temp: " + str(stored_address))
                 temp = ((stored_address + 31) / 32) + 1
-                log.debug("current_miu_i: " + str(current_miu_i))
+                logg.debug("current_miu_i: " + str(current_miu_i))
                 expression = current_miu_i < temp
-                log.debug("Expression: " + str(expression))
+                logg.debug("Expression: " + str(expression))
                 #solver.push()
                 #solver.add(expression)
                 #if check_solver(solver) != unsat:
@@ -1839,8 +1839,8 @@ def sym_exec_ins(params):
                 #solver.pop()
                 #mem.clear()  # very conservative
                 mem[stored_address] = stored_value
-                log.debug("temp: " + str(temp))
-                log.debug("current_miu_i: " + str(current_miu_i))
+                logg.debug("temp: " + str(temp))
+                logg.debug("current_miu_i: " + str(current_miu_i))
             global_state["miu_i"] = current_miu_i
         else:
             raise ValueError('STACK underflow')
@@ -2245,7 +2245,7 @@ def sym_exec_ins(params):
     try:
         print_state(stack, mem, global_state)
     except:
-        log.debug("Error: Debugging states")
+        logg.debug("Error: Debugging states")
 
 
 # TODO: Detect if a money flow depends on the timestamp
@@ -2707,48 +2707,48 @@ def detect_straw_man_contract():
 def detect_honeypots():
     if detect_cash_flow():
         if global_params.DEBUG_MODE:
-            log.info("\t--------- Begin Time ---------")
+            logg.info("\t--------- Begin Time ---------")
             start_time = time.time()
         detect_balance_disorder()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Balance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Balance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_hidden_transfer()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Hidden transfer: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Hidden transfer: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_inheritance_disorder()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Inheritance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Inheritance disorder: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_uninitialised_structs()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Uninitialised structs:  "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Uninitialised structs:  "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_type_deduction_overflow()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Type overflow: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Type overflow: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_skip_empty_string_literal()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Skip empty string: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Skip empty string: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_hidden_state_update()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Hidden state update: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t Hidden state update: \t "+str(math.ceil(elapsed_time))+" seconds")
             start_time = time.time()
         detect_straw_man_contract()
         if global_params.DEBUG_MODE:
             elapsed_time = time.time() - start_time
-            log.info("\t Straw man contract: \t "+str(math.ceil(elapsed_time))+" seconds")
-            log.info("\t---------- End Time ----------")
+            logg.info("\t Straw man contract: \t "+str(math.ceil(elapsed_time))+" seconds")
+            logg.info("\t---------- End Time ----------")
 
     money_flow_found                = any([HeuristicTypes.MONEY_FLOW                in heuristic["type"] for heuristic in heuristics])
     balance_disorder_found          = any([HeuristicTypes.BALANCE_DISORDER          in heuristic["type"] for heuristic in heuristics])
@@ -2764,7 +2764,7 @@ def detect_honeypots():
         # Money flow
         results["money_flow"] = money_flow_found
         s = "\t Money flow:    \t "+str(money_flow_found)
-        log.info(s)
+        logg.info(s)
         # Balance disorder
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.BALANCE_DISORDER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2773,7 +2773,7 @@ def detect_honeypots():
         if s:
             results["balance_disorder"] = s
         s = "\t Balance disorder: \t "+str(balance_disorder_found) + s
-        log.info(s)
+        logg.info(s)
         # Hidden transfer
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.HIDDEN_TRANSFER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2782,7 +2782,7 @@ def detect_honeypots():
         if s:
             results["hidden_transfer"] = s
         s = "\t Hidden transfer: \t "+str(hidden_transfer_found) + s
-        log.info(s)
+        logg.info(s)
         # Inheritance disorder
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.INHERITANCE_DISORDER in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2791,7 +2791,7 @@ def detect_honeypots():
         if s:
             results["inheritance_disorder"] = s
         s = "\t Inheritance disorder: \t "+str(inheritance_disorder_found) + s
-        log.info(s)
+        logg.info(s)
         # Uninitialised struct
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.UNINITIALISED_STRUCT in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2800,7 +2800,7 @@ def detect_honeypots():
         if s:
             results["uninitialised_struct"] = s
         s = "\t Uninitialised struct: \t "+str(uninitialised_struct_found) + s
-        log.info(s)
+        logg.info(s)
         # Type deduction overflow
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.TYPE_DEDUCTION_OVERFLOW in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2809,7 +2809,7 @@ def detect_honeypots():
         if s:
             results["type_deduction_overflow"] = s
         s = "\t Type overflow: \t "+str(type_deduction_overflow_found) + s
-        log.info(s)
+        logg.info(s)
         # Skip empty string literal
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.SKIP_EMPTY_STRING_LITERAL in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2818,7 +2818,7 @@ def detect_honeypots():
         if s:
             results["skip_empty_string_literal"] = s
         s = "\t Skip empty string: \t "+str(skip_empty_string_literal_found) + s
-        log.info(s)
+        logg.info(s)
         # Hidden State Update
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.HIDDEN_STATE_UPDATE in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2827,7 +2827,7 @@ def detect_honeypots():
         if s:
             results["hidden_state_update"] = s
         s = "\t Hidden state update: \t "+str(hidden_state_update_found) + s
-        log.info(s)
+        logg.info(s)
         # Straw Man Contract
         pcs = [heuristic["pc"] for heuristic in heuristics if HeuristicTypes.STRAW_MAN_CONTRACT in heuristic["type"]]
         pcs = [pc for pc in pcs if source_map.find_source_code(pc)]
@@ -2836,44 +2836,44 @@ def detect_honeypots():
         if s:
             results["straw_man_contract"] = s
         s = "\t Straw man contract: \t "+str(straw_man_contract_found) + s
-        log.info(s)
+        logg.info(s)
     else:
         # Money flow
         results["money_flow"] = money_flow_found
         s = "\t Money flow:    \t "+str(money_flow_found)
-        log.info(s)
+        logg.info(s)
         # Balance disorder
         results["balance_disorder"] = balance_disorder_found
         s = "\t Balance disorder: \t "+str(balance_disorder_found)
-        log.info(s)
+        logg.info(s)
         # Hidden transfer
         results["hidden_transfer"] = hidden_transfer_found
         s = "\t Hidden transfer: \t "+str(hidden_transfer_found)
-        log.info(s)
+        logg.info(s)
         # Inheritance disorder
         results["inheritance_disorder"] = inheritance_disorder_found
         s = "\t Inheritance disorder: \t "+str(inheritance_disorder_found)
-        log.info(s)
+        logg.info(s)
         # Uninitialised struct
         results["uninitialised_struct"] = uninitialised_struct_found
         s = "\t Uninitialised struct: \t "+str(uninitialised_struct_found)
-        log.info(s)
+        logg.info(s)
         # Type deduction overflow
         results["type_deduction_overflow"] = type_deduction_overflow_found
         s = "\t Type overflow: \t "+str(type_deduction_overflow_found)
-        log.info(s)
+        logg.info(s)
         # Skip empty string literal
         results["skip_empty_string_literal"] = skip_empty_string_literal_found
         s = "\t Skip empty string: \t "+str(skip_empty_string_literal_found)
-        log.info(s)
+        logg.info(s)
         # Hidden state update
         results["hidden_state_update"] = hidden_state_update_found
         s = "\t Hidden state update: \t "+str(hidden_state_update_found)
-        log.info(s)
+        logg.info(s)
         # Straw man contract
         results["straw_man_contract"] = straw_man_contract_found
         s = "\t Straw man contract: \t "+str(straw_man_contract_found)
-        log.info(s)
+        logg.info(s)
 
 def detect_bugs():
     global results
@@ -2887,7 +2887,7 @@ def detect_bugs():
 
     if instructions:
         evm_code_coverage = float(len(visited_pcs)) / len(instructions.keys()) * 100
-        log.info("\t EVM code coverage: \t %s%%", round(evm_code_coverage, 1))
+        logg.info("\t EVM code coverage: \t %s%%", round(evm_code_coverage, 1))
         results["evm_code_coverage"] = str(round(evm_code_coverage, 1))
 
         dead_code = list(set(instructions.keys()) - set(visited_pcs))
@@ -2898,22 +2898,22 @@ def detect_bugs():
 
         stop_time = time.time()
         results["execution_time"] = str(stop_time-start_time)
-        log.info("\t --- "+str(stop_time - start_time)+" seconds ---")
+        logg.info("\t --- "+str(stop_time - start_time)+" seconds ---")
 
         results["execution_paths"] = str(total_no_of_paths)
         results["timeout"] = g_timeout
     else:
-        log.info("\t EVM code coverage: \t 0.0")
-        log.info("\t Money flow: \t False")
-        log.info("\t Balance disorder: \t False")
-        log.info("\t Hidden transfer: \t False")
-        log.info("\t Inheritance disorder: \t False")
-        log.info("\t Uninitialised struct: \t False")
-        log.info("\t Type overflow: \t False")
-        log.info("\t Skip empty string: \t False")
-        log.info("\t Hidden state update: \t False")
-        log.info("\t Straw man contract: \t False")
-        log.info("\t  --- 0.0 seconds ---")
+        logg.info("\t EVM code coverage: \t 0.0")
+        logg.info("\t Money flow: \t False")
+        logg.info("\t Balance disorder: \t False")
+        logg.info("\t Hidden transfer: \t False")
+        logg.info("\t Inheritance disorder: \t False")
+        logg.info("\t Uninitialised struct: \t False")
+        logg.info("\t Type overflow: \t False")
+        logg.info("\t Skip empty string: \t False")
+        logg.info("\t Hidden state update: \t False")
+        logg.info("\t Straw man contract: \t False")
+        logg.info("\t  --- 0.0 seconds ---")
         results["evm_code_coverage"] = "0.0"
         results["execution_paths"] = str(total_no_of_paths)
         results["timeout"] = g_timeout
@@ -2941,14 +2941,17 @@ def closing_message():
     global c_name
     global results
 
-    log.info("\t====== Analysis Completed ======")
+    logg.info("\t====== Analysis Completed ======")
     if global_params.STORE_RESULT:
         result_file = os.path.join(global_params.RESULTS_DIR, c_name+'.json'.split('/')[-1])
-        print(result_file)
         if '.sol' in c_name:
             result_file = os.path.join(global_params.RESULTS_DIR, c_name.split(':')[0].replace('.sol', '.json').split('/')[-1])
         elif '.bin.evm.disasm' in c_name:
             result_file = os.path.join(global_params.RESULTS_DIR, c_name.replace('.bin.evm.disasm', '.json').split('/')[-1])
+       
+        # address.evm.disasm
+        else:
+            result_file = os.path.join(global_params.RESULTS_DIR, c_name.replace('.evm.disasm', '.json').split('/')[-1])
         mode = 'a'
         if global_params.BYTECODE:
             mode = 'w'
@@ -2964,8 +2967,7 @@ def closing_message():
                     of.write(",")
                     of.write('"'+str(c_name.split(':')[1].replace('.evm.disasm', ''))+'":')
                 of.write(json.dumps(results, indent=1))
-        log.info("Wrote results to %s.", result_file)
-
+        logg.info("Wrote results to %s.", result_file)
 def handler(signum, frame):
     global g_timeout
 
@@ -2996,7 +2998,7 @@ def analyze_constructor_variables(contract, contract_sol, _source_map=None):
         signal.alarm(global_params.GLOBAL_TIMEOUT)
     try:
         build_cfg_and_analyze()
-        log.debug("Done Symbolic execution")
+        logg.debug("Done Symbolic execution")
     except Exception as e:
         if global_params.DEBUG_MODE:
             traceback.print_exc()
@@ -3035,11 +3037,11 @@ def main(contract, contract_sol, _source_map=None):
         signal.signal(signal.SIGALRM, handler)
         signal.alarm(global_params.GLOBAL_TIMEOUT)
 
-    log.info("Running, please wait...")
+    logg.info("Running, please wait...")
 
     try:
         build_cfg_and_analyze()
-        log.debug("Done Symbolic execution")
+        logg.debug("Done Symbolic execution")
     except Exception as e:
         if global_params.DEBUG_MODE:
             traceback.print_exc()
@@ -3052,7 +3054,7 @@ def main(contract, contract_sol, _source_map=None):
     if callable(getattr(signal, "alarm", None)):
         signal.alarm(0)
 
-    log.info("\t============ Results ===========")
+    logg.info("\t============ Results ===========")
     detect_bugs()
 
     closing_message()

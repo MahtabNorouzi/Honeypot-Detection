@@ -1,109 +1,3 @@
-cd ..
-ls
-cd root/
-cd honeybadger
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol 
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol 
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol -c
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol -c
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol -c
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol -c
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol -c
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol -c
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/Gift_1_Eth.sol 
-python honeybadger.py -s ../honeypots/Gift_1_Eth.sol -c
- exit
-cls
-ls
-cd honeybadger
-ls
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py --help
-python honeybadger.py -s ../honeypots/testMahtab.sol > list_of_calls.txt
-ls
-cd ..
-ls
-cd honeypots/
-ls
-cd ../
-cd honeybadger
-ls
-python honeybadger.py -s ../honeypots/testMahtab.sol > list_of_calls.txt
-cat list_of_calls.txt
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/CryptoRoulette.sol
-python honeybadger.py -s ../honeypots/Test1.sol 
-python honeybadger.py -s ../honeypots/Test1.sol 
-python honeybadger.py -s ../honeypots/Test1.sol 
-python honeybadger.py -s ../honeypots/Test1.sol 
-python honeybadger.py -s ../honeypots/Test1.sol -c
-python honeybadger.py -s ../honeypots/Test1.sol -c
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls.txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls.txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls.txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls.txt
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls.txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls(Test1.sol).txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls_temp.txt
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls_temp.txt
-python honeybadger.py -s ../honeypots/Test1.sol -
-python honeybadger.py -s ../honeypots/Test1.sol > list_of_calls_temp.txt
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-exit
-cd honeybadger
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/Test1.sol
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py -s ../honeypots/testMahtab.sol > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/testMahtab.sol
-python honeybadger.py -s ../honeypots/testMahtab.sol
-python honeybadger.py -s ../honeypots/testMahtab.sol -c
-python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
-python honeybadger.py -s ../honeypots/testMahtab.sol
-python honeybadger.py -s ../honeypots/testMahtab.sol
-python honeybadger.py -s ../honeypots/DividendDistributor.sol 
-python honeybadger.py -b ../honeypots/DividendDistributor.bin
-python honeybadger.py -s ../honeypots/DividendDistributor.sol -b
-python honeybadger.py -s ../honeypots/DividendDistributor.bin -b
-python honeybadger.py -s ../honeypots/DividendDistributor.sol
-python honeybadger.py -s ../honeypots/DividendDistributor.sol -c
-python honeybadger.py -s ../honeypots/DividendDistributor.sol > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/DividendDistributor.sol > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/DividendDistributor.bin -b > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/DividendDistributor.sol > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/DividendDistributor.sol > list_of_calls_temp.txt 
-python honeybadger.py -s ../honeypots/DividendDistributor.sol > list_of_calls_temp.txt 
-exit
-python honeybadger.py -s ../honeypots/testMahtab.sol > list_of_calls_temp.txt
-cd honeybadger
-python honeybadger.py -s ../honeypots/testMahtab.sol > list_of_calls_temp.txt
-python honeybadger.py -s ../honeypots/testMahtab.sol
 python honeybadger.py -s ../honeypots/testMahtab.sol
 python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
 python honeybadger.py -s ../honeypots/MultiplicatorX3.sol
@@ -358,3 +252,249 @@ python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
 pip install crytic-compile
 pip install manticore
 manticore
+python honeybadger/test
+python honeybadger/test.py
+python honeybadger/test.py
+python honeybadger/test.py
+python honeybadger/honeybadger.py -si https://etherscan.io/address/0x94602b0E2512DdAd62a935763BF1277c973B2758#code -gb
+python honeybadger/honeybadger.py -ru https://etherscan.io/address/0x94602b0E2512DdAd62a935763BF1277c973B2758#code -gb
+python honeybadger/honeybadger.py -adr 0x0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6
+python honeybadger/honeybadger.py -adr 0x71c46Ed333C35e4E6c62D32dc7C8F00D125b4fee
+python honeybadger/download_contracts_from_etherscan.py 
+python honeybadger/download_contracts_from_etherscan.py 
+python honeybadger/honeybadger.py -adr c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+python
+pip install web3
+python
+pip --version
+python
+clear
+python honeybadger/ethereum_data_web3.py 
+python
+clear
+python honeybadger/honeybadger.py -ethscan
+python honeybadger/honeybadger.py -ethscan 54500
+python honeybadger/honeybadger.py -ethscan 54500
+python honeybadger/honeybadger.py -ethscan 54500
+python honeybadger/honeybadger.py -ethscan 54500
+python honeybadger/honeybadger.py -ethscan 54500
+python honeybadger/honeybadger.py -ethscan 54200
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100 -t 1800
+python
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54100
+python honeybadger/honeybadger.py -ethscan 54500
+exit
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0x9a049f5d18c239efaa258af9f3e7002949a977a0 -glt 1800
+python honeybadger/honeybadger.py -adr 0xc669eaad75042be84daaf9b461b0e868b9ac1871 -glt 1800
+python honeybadger/honeybadger.py -adr 0xc669eaad75042be84daaf9b461b0e868b9ac1871 -glt 1800
+python honeybadger/honeybadger.py -adr 0x589ea787b46da08ec8fc081678335c5d0081010e -glt 1800
+python honeybadger/honeybadger.py -adr 0x589ea787b46da08ec8fc081678335c5d0081010e -glt 1800
+python honeybadger/honeybadger.py -adr 0x4dae54c8645c47dd55782091eca145c7bff974bc -glt 1800
+python honeybadger/honeybadger.py -adr 0x9973aad0d294ac02632d8d26a1a2818213f31f0b -glt 1800
+python honeybadger/honeybadger.py -adr 0x66d796e7ae8608bba361c97ba7682689cc5bf320 -glt 1800
+python honeybadger/honeybadger.py -adr 0x66d796e7ae8608bba361c97ba7682689cc5bf320 -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 -c -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 -c -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 -debug -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 --debug -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 --debug -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 --debug -glt 1800
+python honeybadger/honeybadger.py -adr 0x7b2d5c63d3671092d3d44671717ea78018164661 --debug -glt 1800
+python honeybadger/honeybadger.py -adr 0x88a91fd7fb8aaea8cdad2c990f1dbdcd28022a02 -glt 1800
+python honeybadger/honeybadger.py -adr 0xd79b4c6791784184e2755b2fc1659eaab0f80456 -glt 1800
+python honeybadger/honeybadger.py -ethscan 97508 100000
+python honeybadger/honeybadger.py -ethscan 97680 100000
+python honeybadger/honeybadger.py -ethscan 99372 100000
+python honeybadger/honeybadger.py -ethscan 100000 110000
+python honeybadger/honeybadger.py -ethscan 107478 110000
+python honeybadger/honeybadger.py -ethscan 110000 190000
+python honeybadger/honeybadger.py -ethscan 113764 190000
+python honeybadger/honeybadger.py -ethscan 114003 190000
+python honeybadger/honeybadger.py -ethscan 124439 190000
+python honeybadger/honeybadger.py -ethscan 130925 190000
+python honeybadger/honeybadger.py -ethscan 181848 190000
+python honeybadger/honeybadger.py -ethscan 190000 200000
+python honeybadger/honeybadger.py -ethscan 200000 300000
+python honeybadger/honeybadger.py -ethscan 204800 300000
+exit
+python honeybadger/batch_run.py 
+python honeybadger/batch_run.py 
+python honeybadger/honeybadger.py -si honeypots/BankOfStephen.sol
+python honeybadger/batch_run.py 
+python honeybadger/batch_run.py 
+clear
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+python tools/etherscan_contract_crawler.py 
+clear
+python honeybadger/etherscan_contract_crawler.py 
+pip install queue
+pip install --update pip
+pip install queue
+pip install queue
+clear
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+clear
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+clear
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+clear
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
+python honeybadger/etherscan_contract_crawler.py 
